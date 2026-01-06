@@ -1,0 +1,2236 @@
+<!doctype html>
+<html lang="es" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enciclopedia Profesional de Ajedrez</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html, body, #app {
+      height: 100%;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .main-wrapper {
+      background: linear-gradient(to bottom right, #0f172a 0%, #1e293b 50%, #334155 100%);
+      overflow: auto;
+    }
+    
+    .sidebar {
+      background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+      border-right: 1px solid rgba(148, 163, 184, 0.1);
+      overflow-y: auto;
+      transition: transform 0.3s ease;
+    }
+    
+    .category-btn {
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    
+    .category-btn:hover {
+      background-color: rgba(59, 130, 246, 0.1);
+      border-left: 3px solid #3b82f6;
+    }
+    
+    .category-btn.active {
+      background-color: rgba(59, 130, 246, 0.2);
+      border-left: 3px solid #3b82f6;
+    }
+    
+    .opening-card {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .opening-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(59, 130, 246, 0.5);
+      box-shadow: 0 20px 40px rgba(59, 130, 246, 0.15);
+    }
+    
+    .board-square {
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      position: relative;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .light-square {
+      background-color: #f0d9b5;
+    }
+    
+    .dark-square {
+      background-color: #b58863;
+    }
+    
+    .highlight-square {
+      box-shadow: inset 0 0 0 3px rgba(59, 130, 246, 0.7);
+    }
+    
+    .arrow-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    
+    .chess-board-container {
+      display: inline-block;
+      border: 3px solid rgba(148, 163, 184, 0.3);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #312e2b;
+    }
+    
+    .coord-label {
+      font-size: 11px;
+      font-weight: 600;
+      opacity: 0.6;
+      position: absolute;
+    }
+    
+    .coord-file {
+      bottom: 2px;
+      right: 4px;
+    }
+    
+    .coord-rank {
+      top: 2px;
+      left: 4px;
+    }
+    
+    .tab-button {
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    
+    .tab-button.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
+      border-radius: 2px 2px 0 0;
+    }
+    
+    .stat-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+      border-radius: 4px;
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .search-input {
+      background: rgba(30, 41, 59, 0.8);
+      border: 2px solid rgba(148, 163, 184, 0.2);
+      transition: all 0.3s ease;
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      background: rgba(30, 41, 59, 0.95);
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .detail-section {
+      background: rgba(30, 41, 59, 0.5);
+      border-left: 3px solid #3b82f6;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .special-note-box {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.1));
+      border: 2px solid rgba(251, 191, 36, 0.4);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .special-note-box::before {
+      content: '✨';
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      font-size: 80px;
+      opacity: 0.1;
+    }
+    
+    .move-item {
+      background: rgba(59, 130, 246, 0.1);
+      border-left: 3px solid #3b82f6;
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+    
+    .calculator-option {
+      border: 2px solid rgba(148, 163, 184, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: rgba(30, 41, 59, 0.5);
+    }
+    
+    .calculator-option:hover {
+      border-color: rgba(59, 130, 246, 0.5);
+      background: rgba(30, 41, 59, 0.8);
+      transform: translateY(-2px);
+    }
+    
+    .calculator-option.selected {
+      border-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.2);
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+    }
+    
+    .recommendation-card {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+      border: 2px solid rgba(16, 185, 129, 0.3);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+    
+    .family-section {
+      background: rgba(30, 41, 59, 0.6);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+    
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 50;
+        transform: translateX(-100%);
+      }
+      
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      
+      .board-square {
+        width: 40px;
+        height: 40px;
+        font-size: 26px;
+      }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div id="app" class="main-wrapper h-full w-full flex flex-col"><!-- Header -->
+   <header class="w-full px-6 py-4" style="background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid rgba(148, 163, 184, 0.15);">
+    <div class="max-w-screen-2xl mx-auto flex items-center justify-between">
+     <div class="flex items-center gap-4"><button id="mobile-menu-btn" class="md:hidden text-white text-2xl">☰</button>
+      <div>
+       <h1 id="site-title" class="text-2xl md:text-3xl font-bold" style="font-family: 'Merriweather', serif; color: #60a5fa;">Enciclopedia de Aperturas</h1>
+       <p id="site-tagline" class="text-sm text-slate-400 hidden md:block">Domina la teoría del ajedrez moderno</p>
+      </div>
+     </div>
+    </div>
+   </header>
+   <div class="flex-1 flex overflow-hidden"><!-- Sidebar -->
+    <aside id="sidebar" class="sidebar w-64 flex-shrink-0">
+     <div class="p-4"><label for="search-input" class="sr-only">Buscar aperturas</label> <input type="text" id="search-input" class="search-input w-full px-4 py-2 rounded-lg text-white text-sm" placeholder="🔍 Buscar aperturas...">
+     </div>
+     <nav class="px-2 pb-4">
+      <div class="category-btn active px-4 py-3 text-slate-200 font-medium text-sm rounded-lg mb-1" data-category="all">
+       📚 Todas las Aperturas
+      </div>
+      <div class="category-btn px-4 py-3 text-slate-300 font-medium text-sm rounded-lg mb-1" data-category="abiertas">
+       👑 Abiertas (1.e4 e5)
+      </div>
+      <div class="category-btn px-4 py-3 text-slate-300 font-medium text-sm rounded-lg mb-1" data-category="semiabiertas">
+       ⚔️ Semiabiertas (1.e4)
+      </div>
+      <div class="category-btn px-4 py-3 text-slate-300 font-medium text-sm rounded-lg mb-1" data-category="cerradas">
+       🏰 Cerradas (1.d4 d5)
+      </div>
+      <div class="category-btn px-4 py-3 text-slate-300 font-medium text-sm rounded-lg mb-1" data-category="indias">
+       🐘 Defensas Indias (1.d4 Nf6)
+      </div>
+      <div class="category-btn px-4 py-3 text-slate-300 font-medium text-sm rounded-lg mb-1" data-category="flanco">
+       🌊 Aperturas de Flanco
+      </div>
+      <div class="category-btn px-4 py-3 text-slate-300 font-medium text-sm rounded-lg mb-1" data-category="gambitos">
+       🎲 Gambitos
+      </div>
+      <div class="category-btn px-4 py-3 text-slate-300 font-medium text-sm rounded-lg mb-1" data-category="sistemas">
+       🔧 Sistemas Universales
+      </div>
+      <div class="category-btn px-4 py-3 text-slate-300 font-medium text-sm rounded-lg mb-1" data-category="irregulares">
+       🎭 Aperturas Irregulares
+      </div>
+      <div class="category-btn px-4 py-3 text-slate-300 font-medium text-sm rounded-lg mb-1" data-category="recommendations">
+       ⭐ Recomendaciones
+      </div>
+      <div class="category-btn px-4 py-3 text-slate-300 font-medium text-sm rounded-lg mb-1" data-category="calculator">
+       🧮 Calculadora Personal
+      </div>
+     </nav>
+    </aside><!-- Main Content -->
+    <main class="flex-1 overflow-y-auto">
+     <div class="max-w-7xl mx-auto p-6" id="main-content"><!-- Content will be injected here -->
+     </div>
+    </main>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      site_title: "Enciclopedia de Aperturas",
+      site_tagline: "Domina la teoría del ajedrez moderno",
+      primary_color: "#3b82f6",
+      background_color: "#0f172a",
+      surface_color: "#1e293b",
+      text_color: "#f1f5f9",
+      accent_color: "#10b981",
+      font_family: "Inter",
+      font_size: 16
+    };
+
+    // Función auxiliar para generar tablero de ajedrez
+    function generateChessBoard(position, highlights = []) {
+      const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+      const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
+      
+      const pieceSymbols = {
+        'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙',
+        'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '  ', 'p': '♟'
+      };
+      
+      let html = '<div class="chess-board-container"><div style="display: grid; grid-template-columns: repeat(8, 50px);">';
+      
+      for (let rank = 0; rank < 8; rank++) {
+        for (let file = 0; file < 8; file++) {
+          const isLight = (rank + file) % 2 === 0;
+          const piece = position[rank][file];
+          const square = files[file] + ranks[rank];
+          const isHighlighted = highlights.some(h => h.from === square || h.to === square);
+          
+          html += `<div class="board-square ${isLight ? 'light-square' : 'dark-square'} ${isHighlighted ? 'highlight-square' : ''}" style="color: ${piece === piece.toUpperCase() ? '#fff' : '#000'};">`;
+          
+          if (piece) {
+            html += pieceSymbols[piece] || '';
+          }
+          
+          // Coordenadas
+          if (file === 0) {
+            html += `<span class="coord-label coord-rank" style="color: ${isLight ? '#b58863' : '#f0d9b5'};">${ranks[rank]}</span>`;
+          }
+          if (rank === 7) {
+            html += `<span class="coord-label coord-file" style="color: ${isLight ? '#b58863' : '#f0d9b5'};">${files[file]}</span>`;
+          }
+          
+          html += '</div>';
+        }
+      }
+      
+      html += '</div></div>';
+      return html;
+    }
+
+    // BASE DE DATOS COMPLETA ORGANIZADA POR ECO Y FAMILIAS
+    const openingsDatabase = {
+      // ==================== APERTURAS ABIERTAS (C00-C99) ====================
+      // === 1.e4 e5 - Partidas Doble Peón de Rey ===
+      
+      "ruy-lopez": {
+        id: "ruy-lopez", name: "Apertura Ruy López", eco: "C60-C99", 
+        family: "abiertas", classification: "apertura",
+        moves: "1.e4 e5 2.Nf3 Nc6 3.Bb5", tags: ["posicional", "estratégica", "clásica"],
+        description: "La más clásica y respetada apertura del ajedrez. Control posicional profundo.",
+        detailedDescription: `
+          <p class="mb-4">La <strong>Ruy López</strong>, también conocida como <strong>Apertura Española</strong>, es considerada la apertura más antigua y profunda del ajedrez. Nombrada en honor al sacerdote español Ruy López de Segura (1561), ha sido analizada durante más de 500 años y sigue siendo la elección favorita en el más alto nivel.</p>
+          
+          <p class="mb-4"><strong>Idea Principal:</strong> Las blancas desarrollan el alfil a b5 atacando el caballo que defiende e5, creando una presión indirecta sobre el peón central negro. A diferencia de otras aperturas, las blancas no capturan inmediatamente en c6, sino que mantienen la tensión, desarrollan sus piezas y preparan lentamente la ruptura d4.</p>
+          
+          <p class="mb-4"><strong>Planes Típicos:</strong> Las blancas buscan controlar el centro con d4, desarrollar armoniosamente (Nc3, O-O, Re1), y ejercer presión en el flanco de dama o atacar el flanco de rey. Las negras pueden elegir entre la sólida Defensa Cerrada (3...a6), la agresiva Defensa Marshall, o la ultradefensiva Defensa Berlinesa (3...Nf6).</p>
+          
+          <p><strong>Estilo de Juego:</strong> Estratégico y posicional con posibilidades tácticas. Requiere paciencia y comprensión profunda de estructuras de peones y maniobras de piezas menores.</p>
+        `,
+        initialBoard: generateChessBoard([
+          ['r','','b','q','k','b','n','r'],
+          ['p','p','p','p','','p','p','p'],
+          ['','','n','','','','',''],
+          ['','B','','','p','','',''],
+          ['','','','','P','','',''],
+          ['','','','','','N','',''],
+          ['P','P','P','P','','P','P','P'],
+          ['R','N','B','Q','K','','','R']
+        ], [{from: 'f1', to: 'b5'}]),
+        keyMoves: [
+          {move: '1.e4', explanation: 'Control del centro y apertura de líneas para el desarrollo'},
+          {move: '1...e5', explanation: 'Las negras igualan el control central'},
+          {move: '2.Nf3', explanation: 'Desarrollo natural atacando e5'},
+          {move: '2...Nc6', explanation: 'Defensa del peón e5'},
+          {move: '3.Bb5', explanation: 'La jugada característica: presión sobre el defensor de e5'},
+          {move: '3...a6', explanation: 'La continuación más popular, preguntando al alfil sus intenciones'}
+        ],
+        specialNote: '👑 <strong>LA REINA DE LAS APERTURAS</strong> - Jugada en más del 30% de las partidas de élite. Fischer, Kasparov y Carlsen la han usado como arma principal. La Defensa Berlinesa (3...Nf6) se popularizó cuando Kramnik la usó para destronar a Kasparov en el Campeonato Mundial 2000.',
+        whiteWins: 37, blackWins: 28, draws: 35, advantage: "+0.3", popularity: {beginner: 65, intermediate: 85, advanced: 95, gm: 98}
+      },
+
+      "italian": {
+        id: "italian", name: "Apertura Italiana", eco: "C50-C59", 
+        family: "abiertas", classification: "apertura",
+        moves: "1.e4 e5 2.Nf3 Nc6 3.Bc4", tags: ["táctica", "principiantes", "ataque"],
+        description: "Desarrollo rápido atacando f7. Ideal para principiantes.",
+        detailedDescription: `
+          <p class="mb-4">La <strong>Apertura Italiana</strong> (Giuoco Piano - "Juego Tranquilo" en italiano) es una de las aperturas más antiguas del ajedrez, documentada desde el siglo XV. A pesar de su nombre pacífico, puede llevar a posiciones extremadamente tácticas y agresivas.</p>
+          
+          <p class="mb-4"><strong>Idea Principal:</strong> Las blancas desarrollan rápidamente el alfil a c4, apuntando al punto débil f7 (solo defendido por el rey). El objetivo es completar el desarrollo con d3, Nc3, O-O y luego presionar el centro con d4 o atacar directamente con Ng5.</p>
+          
+          <p class="mb-4"><strong>Planes Típicos:</strong> Las blancas buscan c3 y d4 para dominar el centro, o pueden optar por el agresivo ataque Fried Liver (Ng5 y Nxf7). Las negras responden típicamente con ...Bc5, copiando el desarrollo blanco, o ...Be7 en líneas más tranquilas. La lucha se centra en quién controla el centro primero.</p>
+          
+          <p><strong>Estilo de Juego:</strong> Flexible - puede ser posicional (Giuoco Pianissimo con d3) o táctica (Ataque Greco con d4 y O-O). Excelente para aprender principios de apertura.</p>
+        `,
+        initialBoard: generateChessBoard([
+          ['r','','b','q','k','b','n','r'],
+          ['p','p','p','p','','p','p','p'],
+          ['','','n','','','','',''],
+          ['','','','','p','','',''],
+          ['','','B','','P','','',''],
+          ['','','','','','N','',''],
+          ['P','P','P','P','','P','P','P'],
+          ['R','N','B','Q','K','','','R']
+        ], [{from: 'f1', to: 'c4'}]),
+        keyMoves: [
+          {move: '1.e4 e5', explanation: 'Apertura clásica del centro'},
+          {move: '2.Nf3 Nc6', explanation: 'Desarrollo natural con ataque a e5'},
+          {move: '3.Bc4', explanation: 'Apuntando a f7, el punto más débil de las negras'},
+          {move: '3...Bc5', explanation: 'Desarrollo simétrico atacando f2'},
+          {move: '4.c3', explanation: 'Preparando d4 para dominar el centro'},
+          {move: '4...Nf6', explanation: 'Contraatacando e4'}
+        ],
+        specialNote: '🎓 <strong>LA APERTURA PERFECTA PARA APRENDER</strong> - Enseña todos los principios clásicos: desarrollo rápido, control del centro, seguridad del rey. Morphy la usó para destruir a sus oponentes en el siglo XIX.',
+        whiteWins: 36, blackWins: 29, draws: 35, advantage: "+0.2", popularity: {beginner: 85, intermediate: 70, advanced: 60, gm: 45}
+      },
+
+      "scotch": {
+        id: "scotch", name: "Apertura Escocesa", eco: "C44-C45", 
+        family: "abiertas", classification: "apertura",
+        moves: "1.e4 e5 2.Nf3 Nc6 3.d4", tags: ["táctica", "agresiva", "directa"],
+        description: "Ataque directo al centro con d4. Simplifica la posición rápidamente.",
+        detailedDescription: `
+          <p class="mb-4">La <strong>Apertura Escocesa</strong> es una de las aperturas más antiguas del ajedrez, documentada desde el siglo XVI. Su nombre proviene del match por correspondencia Londres-Edimburgo de 1824. Es una apertura directa y agresiva que busca abrir el centro inmediatamente, llevando a posiciones claras y tácticas.</p>
+          
+          <p class="mb-4"><strong>Idea Principal:</strong> Con 3.d4, las blancas atacan directamente e5, forzando cambios en el centro. Después de 3...exd4 4.Nxd4, las blancas han abierto líneas y obtienen desarrollo rápido con ventaja de espacio. A diferencia de la Ruy López que mantiene tensión, la Escocesa simplifica pero conserva iniciativa.</p>
+          
+          <p class="mb-4"><strong>Planes Típicos:</strong> Las blancas desarrollan rápidamente con Nc3, Be3, Qd2, O-O-O y buscan aprovechar su mejor desarrollo para atacar. Las negras deben desarrollarse cuidadosamente, típicamente con ...Nf6, ...Bb4 o ...Bc5, buscando igualar antes de que las blancas lancen su ataque. La variante Mieses (4...Qh4) busca complicaciones tácticas inmediatas.</p>
+          
+          <p><strong>Estilo de Juego:</strong> Táctico y directo. Posiciones abiertas con desarrollo rápido y oportunidades tácticas frecuentes. Ideal para quienes prefieren claridad estratégica sobre complejidad posicional.</p>
+        `,
+        initialBoard: generateChessBoard([
+          ['r','','b','q','k','b','n','r'],
+          ['p','p','p','p','','p','p','p'],
+          ['','','n','','','','',''],
+          ['','','','','p','','',''],
+          ['','','','p','P','','',''],
+          ['','','','','','N','',''],
+          ['P','P','P','','','P','P','P'],
+          ['R','N','B','Q','K','B','','R']
+        ], [{from: 'd2', to: 'd4'}]),
+        keyMoves: [
+          {move: '1.e4 e5', explanation: 'Apertura clásica del doble peón de rey'},
+          {move: '2.Nf3 Nc6', explanation: 'Desarrollo natural con ataque a e5'},
+          {move: '3.d4', explanation: 'La idea escocesa: ataque directo al centro'},
+          {move: '3...exd4', explanation: 'Captura prácticamente forzada'},
+          {move: '4.Nxd4', explanation: 'Centro abierto, las blancas tienen ventaja de desarrollo'},
+          {move: '4...Nf6', explanation: 'Presión sobre e4, desarrollo activo'}
+        ],
+        specialNote: '⚡ <strong>LA FAVORITA DE GARRY KASPAROV</strong> - Kasparov la usó como arma sorpresa en su match del Campeonato Mundial 1990 contra Karpov, ganando partidas brillantes. Magnus Carlsen la ha jugado frecuentemente. Es más directa que la Ruy López pero mantiene suficiente veneno para causar problemas.',
+        whiteWins: 35, blackWins: 30, draws: 35, advantage: "+0.2", popularity: {beginner: 60, intermediate: 65, advanced: 70, gm: 75}
+      },
+
+      "vienna": {
+        id: "vienna", name: "Partida Vienesa", eco: "C25-C29", 
+        family: "abiertas", classification: "apertura",
+        moves: "1.e4 e5 2.Nc3", tags: ["flexible", "táctica", "sólida"],
+        description: "Flexible desarrollo del caballo. Puede transponerse a muchas aperturas.",
+        detailedDescription: `
+          <p class="mb-4">La <strong>Partida Vienesa</strong> debe su nombre a los maestros vieneses del siglo XIX que la popularizaron. Es una apertura extremadamente flexible que mantiene múltiples opciones estratégicas. Ha experimentado un renacimiento en el ajedrez moderno gracias a su adopción por jugadores de élite buscando evitar la teoría pesada de la Ruy López.</p>
+          
+          <p class="mb-4"><strong>Idea Principal:</strong> Con 2.Nc3, las blancas desarrollan el caballo antes que el alfil, manteniendo flexibilidad máxima. El caballo en c3 apoya el avance f4 (Gambito Vienés) o prepara transponer a otras aperturas. Las blancas pueden jugar d3 y f4, o Bc4 y d3, o incluso Nf3 transponiendo a Cuatro Caballos.</p>
+          
+          <p class="mb-4"><strong>Planes Típicos:</strong> Las blancas buscan f4 para atacar e5 (Gambito Vienés), o jugar Bc4 y d3 con desarrollo sólido. Contra 2...Nf6, las blancas tienen 3.f4 (agresivo) o 3.Bc4 (posicional). Las negras responden con desarrollo natural, cuidando no permitir un f4 devastador. El Gambito Vienés con 3.f4 exf4 4.Nf3 lleva a posiciones muy tácticas.</p>
+          
+          <p><strong>Estilo de Juego:</strong> Flexible con opciones tanto tácticas como posicionales. Ideal para jugadores que quieren mantener opciones abiertas y evitar memorización excesiva.</p>
+        `,
+        initialBoard: generateChessBoard([
+          ['r','n','b','q','k','b','n','r'],
+          ['p','p','p','p','','p','p','p'],
+          ['','','','','','','',''],
+          ['','','','','p','','',''],
+          ['','','','','P','','',''],
+          ['','','N','','','','',''],
+          ['P','P','P','P','','P','P','P'],
+          ['R','','B','Q','K','B','N','R']
+        ], [{from: 'b1', to: 'c3'}]),
+        keyMoves: [
+          {move: '1.e4 e5', explanation: 'Apertura clásica'},
+          {move: '2.Nc3', explanation: 'La idea vienesa: desarrollo flexible preparando f4'},
+          {move: '2...Nf6', explanation: 'Desarrollo natural atacando e4'},
+          {move: '3.f4', explanation: 'El Gambito Vienés - atacando e5 inmediatamente'},
+          {move: '3...d5', explanation: 'Contrajuego central enérgico'},
+          {move: '4.fxe5 Nxe4', explanation: 'Tácticas agudas - ambos lados buscan iniciativa'}
+        ],
+        specialNote: '🎭 <strong>LA APERTURA CAMALEÓN</strong> - Wesley So la ha usado para derrotar a los mejores del mundo. Puede ser tan tranquila o agresiva como desees. El Gambito Vienés fue el arma secreta de Hamppe y Falkbeer en el siglo XIX. Recientemente revivida como arma anti-Berlin.',
+        whiteWins: 35, blackWins: 29, draws: 36, advantage: "+0.2", popularity: {beginner: 55, intermediate: 60, advanced: 65, gm: 60}
+      },
+
+      "kings-gambit": {
+        id: "kings-gambit", name: "Gambito de Rey", eco: "C30-C39", 
+        family: "gambitos", classification: "gambito",
+        moves: "1.e4 e5 2.f4", tags: ["gambito", "agresiva", "romántica"],
+        description: "Sacrificio de peón f para ataque fulminante. Muy romántico y agresivo.",
+        detailedDescription: `
+          <p class="mb-4">El <strong>Gambito de Rey</strong> es la apertura más romántica y agresiva del ajedrez. Popularizado en el siglo XIX, era el arma favorita de los maestros del juego táctico como Anderssen, Morphy y Spassky. Sacrifica un peón inmediatamente para obtener desarrollo, espacio y líneas abiertas para el ataque.</p>
+          
+          <p class="mb-4"><strong>Idea Principal:</strong> El audaz 2.f4 ofrece el peón f para desviar el peón e5 negro y abrir líneas en el flanco de rey. Si las negras aceptan (2...exf4), las blancas continuarán con Nf3, d4, Bxf4 ganando tiempo y espacio. La compensación es dinámica: desarrollo rápido, columna f semiabierta y posibilidades de ataque directo al rey.</p>
+          
+          <p class="mb-4"><strong>Planes Típicos:</strong> Las blancas buscan desarrollo veloz con Nf3, Bc4, O-O y ataques directos con Qf3, Re1 y e5. Las negras pueden aceptar el gambito y defender con ...d5 o ...d6, o declinar con 2...Bc5 (Gambito Clásico Declinado) o 2...d5 (Contragambito Falkbeer).</p>
+          
+          <p><strong>Estilo de Juego:</strong> Táctico salvaje con sacrificios frecuentes. No apto para los débiles de corazón. Requiere valentía y cálculo preciso.</p>
+        `,
+        initialBoard: generateChessBoard([
+          ['r','n','b','q','k','b','n','r'],
+          ['p','p','p','p','','p','p','p'],
+          ['','','','','','','',''],
+          ['','','','','p','','',''],
+          ['','','','','P','P','',''],
+          ['','','','','','','',''],
+          ['P','P','P','P','','','P','P'],
+          ['R','N','B','Q','K','B','N','R']
+        ], [{from: 'f2', to: 'f4'}]),
+        keyMoves: [
+          {move: '1.e4 e5', explanation: 'Apertura clásica'},
+          {move: '2.f4!', explanation: 'El gambito - ¡sacrificando f4 por la iniciativa!'},
+          {move: '2...exf4', explanation: 'Aceptando el desafío'},
+          {move: '3.Nf3', explanation: 'Desarrollo con ataque a h7 y control del centro'},
+          {move: '3...g5', explanation: 'Defensa moderna defendiendo el peón f4'},
+          {move: '4.h4!', explanation: 'Contraataque inmediato en el flanco - ¡el juego se incendia!'}
+        ],
+        specialNote: '⚔️ <strong>LA APERTURA DE LOS ROMÁNTICOS</strong> - En el siglo XIX era considerada la única apertura respetable. Spassky la usó para derrotar a Fischer en la partida 1 del Campeonato Mundial de 1972, causando shock mundial. "No hay belleza sin riesgo" - dicho del Gambito de Rey.',
+        whiteWins: 38, blackWins: 32, draws: 30, advantage: "+0.1", popularity: {beginner: 40, intermediate: 45, advanced: 50, gm: 30}
+      },
+
+      "two-knights": {
+        id: "two-knights", name: "Defensa de los Dos Caballos", eco: "C55-C59",
+        family: "abiertas", classification: "defensa",
+        moves: "1.e4 e5 2.Nf3 Nc6 3.Bc4 Nf6", tags: ["táctica", "aguda", "compleja"],
+        description: "Las negras contraatacan e4. Lleva a posiciones muy tácticas.",
+        detailedDescription: `
+          <p class="mb-4">La <strong>Defensa de los Dos Caballos</strong> es una de las aperturas más tácticas y complejas del ajedrez. En lugar de defender pasivamente con ...Bc5, las negras contraatacan e4 inmediatamente con ...Nf6, desafiando a las blancas a probar su agresividad. Es favorita de jugadores tácticos que aman complicaciones.</p>
+          
+          <p class="mb-4"><strong>Idea Principal:</strong> Con 3...Nf6, las negras atacan e4, forzando a las blancas a decidir entre defender (d3), sacrificar (Ng5 - Ataque Fried Liver), o avanzar (d4). El famoso Ataque Fried Liver (4.Ng5 d5 5.exd5 Nxd5 6.Nxf7!) sacrifica caballo por dos peones y ataque devastador. Las negras deben conocer la teoría o pueden perderse rápidamente.</p>
+          
+          <p class="mb-4"><strong>Planes Típicos:</strong> Las blancas buscan Ng5 atacando f7, o d4 abriendo el centro. El Ataque Fried Liver lleva a tácticas salvajes donde las negras deben defender con precisión. Las negras pueden evitarlo con 4...Bc5 en lugar de 4...d5, pero aún enfrentan presión. La variante principal 4.Ng5 d5 5.exd5 Na5 es sólida para las negras pero requiere estudio profundo.</p>
+          
+          <p><strong>Estilo de Juego:</strong> Ultra táctico con sacrificios frecuentes. Requiere cálculo preciso y memoria de variantes críticas. No apto para principiantes sin preparación.</p>
+        `,
+        initialBoard: generateChessBoard([
+          ['r','','b','q','k','b','','r'],
+          ['p','p','p','p','','p','p','p'],
+          ['','','n','','','n','',''],
+          ['','','','','p','','',''],
+          ['','','B','','P','','',''],
+          ['','','','','','N','',''],
+          ['P','P','P','P','','P','P','P'],
+          ['R','N','B','Q','K','','','R']
+        ], [{from: 'g8', to: 'f6'}]),
+        keyMoves: [
+          {move: '1.e4 e5 2.Nf3 Nc6 3.Bc4', explanation: 'Apertura Italiana estándar'},
+          {move: '3...Nf6', explanation: 'La Dos Caballos - ¡contraataque en e4!'},
+          {move: '4.Ng5', explanation: 'Ataque directo a f7 - la jugada más agresiva'},
+          {move: '4...d5', explanation: 'Aceptando el desafío - el centro explota'},
+          {move: '5.exd5 Nxd5', explanation: 'Capturando y desarrollando'},
+          {move: '6.Nxf7!', explanation: '¡El Fried Liver! Sacrificio de caballo clásico'}
+        ],
+        specialNote: '🍗 <strong>EL ATAQUE FRIED LIVER</strong> - Uno de los sacrificios más famosos del ajedrez. El nombre viene de "Fegatello" (hígado frito) en italiano antiguo. Si las negras aceptan el sacrificio sin conocer teoría, pueden perder en 10 jugadas. Fischer dijo: "La Dos Caballos es refutada por la fuerza bruta - pero ¡qué hermosa fuerza!"',
+        whiteWins: 37, blackWins: 29, draws: 34, advantage: "+0.3", popularity: {beginner: 65, intermediate: 70, advanced: 75, gm: 60}
+      },
+
+      "four-knights": {
+        id: "four-knights", name: "Apertura de los Cuatro Caballos", eco: "C46-C49",
+        family: "abiertas", classification: "apertura",
+        moves: "1.e4 e5 2.Nf3 Nc6 3.Nc3 Nf6", tags: ["sólida", "simétrica", "clásica"],
+        description: "Desarrollo simétrico de ambos caballos. Posiciones equilibradas.",
+        detailedDescription: `
+          <p class="mb-4">La <strong>Apertura de los Cuatro Caballos</strong> es una de las aperturas más antiguas y naturales del ajedrez. Ambos bandos desarrollan sus caballos a sus casillas óptimas, creando una posición perfectamente simétrica. Fue muy popular en el siglo XIX y sigue siendo una elección sólida para jugadores que buscan posiciones equilibradas.</p>
+          
+          <p class="mb-4"><strong>Idea Principal:</strong> El desarrollo simétrico de los caballos crea una posición equilibrada donde ningún bando tiene ventaja significativa. Las blancas mantienen el derecho a la primera jugada, pero las posiciones suelen ser tranquilas y estratégicas. Es una apertura ideal para jugadores que quieren evitar complicaciones tácticas tempranas.</p>
+          
+          <p class="mb-4"><strong>Planes Típicos:</strong> Las blancas pueden elegir entre 4.Bb5 (Variante Española), 4.Bc4 (Variante Italiana), o 4.d4 (más agresiva). Las negras responden simétricamente o pueden romper la simetría con 4...Bb4 o 4...Nd4. La partida suele ser técnica con chances iguales para ambos bandos.</p>
+          
+          <p><strong>Estilo de Juego:</strong> Posicional y equilibrado. Ideal para aprender principios de desarrollo y coordinación de piezas sin enfrentar ataques violentos.</p>
+        `,
+        initialBoard: generateChessBoard([
+          ['r','','b','q','k','b','','r'],
+          ['p','p','p','p','','p','p','p'],
+          ['','','n','','','n','',''],
+          ['','','','','p','','',''],
+          ['','','','','P','','',''],
+          ['','','N','','','N','',''],
+          ['P','P','P','P','','P','P','P'],
+          ['R','','B','Q','K','B','','R']
+        ], [{from: 'b1', to: 'c3'}, {from: 'g8', to: 'f6'}]),
+        keyMoves: [
+          {move: '1.e4 e5', explanation: 'Apertura clásica simétrica'},
+          {move: '2.Nf3 Nc6', explanation: 'Desarrollo natural de ambos caballos'},
+          {move: '3.Nc3 Nf6', explanation: 'Simetría perfecta - cuatro caballos desarrollados'},
+          {move: '4.Bb5', explanation: 'Variante Española de los Cuatro Caballos'},
+          {move: '4...Bb4', explanation: 'Rompiendo la simetría con la clavada Rubinstein'},
+          {move: '5.O-O O-O', explanation: 'Ambos reyes buscan seguridad'}
+        ],
+        specialNote: '⚖️ <strong>LA APERTURA SIMÉTRICA</strong> - Steinitz y Lasker la jugaron frecuentemente. Es excelente para aprender coordinación de piezas. "En los Cuatro Caballos, el que cometa el primer error, pierde" - dicho clásico del ajedrez.',
+        whiteWins: 34, blackWins: 30, draws: 36, advantage: "+0.1", popularity: {beginner: 60, intermediate: 50, advanced: 40, gm: 25}
+      },
+
+      "ponziani": {
+        id: "ponziani", name: "Apertura Ponziani", eco: "C44",
+        family: "abiertas", classification: "apertura",
+        moves: "1.e4 e5 2.Nf3 Nc6 3.c3", tags: ["posicional", "poco común", "sólida"],
+        description: "Preparación para d4 desde temprano. Poco jugada pero sólida.",
+        detailedDescription: `
+          <p class="mb-4">La <strong>Apertura Ponziani</strong> lleva el nombre del maestro italiano Domenico Lorenzo Ponziani, quien la analizó en 1769. Aunque no es tan popular como la Ruy López o la Italiana, representa un enfoque directo: las blancas preparan d4 inmediatamente para dominar el centro.</p>
+          
+          <p class="mb-4"><strong>Idea Principal:</strong> Con 3.c3, las blancas preparan el avance d4, buscando dominio central máximo. La idea es simple: después de 4.d4, las blancas tendrían dos peones en el centro contra uno. Sin embargo, este plan tiene el costo de perder tiempo con el peón c en lugar de desarrollar piezas.</p>
+          
+          <p class="mb-4"><strong>Planes Típicos:</strong> Las blancas juegan d4, Bb5, y buscan presión central. Las negras pueden responder con 3...Nf6 (presionando e4), 3...d5 (contragolpe central directo), o 3...d6 más sólido. La teoría moderna considera que las negras obtienen buen juego con desarrollo activo.</p>
+          
+          <p><strong>Estilo de Juego:</strong> Posicional con intención de controlar el centro. Menos analizada que otras aperturas, lo que puede ser ventajoso contra oponentes bien preparados.</p>
+        `,
+        initialBoard: generateChessBoard([
+          ['r','','b','q','k','b','n','r'],
+          ['p','p','p','p','','p','p','p'],
+          ['','','n','','','','',''],
+          ['','','','','p','','',''],
+          ['','','','','P','','',''],
+          ['','','P','','','N','',''],
+          ['P','P','','P','','P','P','P'],
+          ['R','N','B','Q','K','B','','R']
+        ], [{from: 'c2', to: 'c3'}]),
+        keyMoves: [
+          {move: '1.e4 e5 2.Nf3 Nc6', explanation: 'Desarrollo clásico'},
+          {move: '3.c3', explanation: 'La idea Ponziani - preparando d4'},
+          {move: '3...Nf6', explanation: 'Presión inmediata sobre e4'},
+          {move: '4.d4 Nxe4', explanation: 'Las negras capturan el peón central'},
+          {move: '5.d5', explanation: 'Ganando espacio y atacando el caballo'},
+          {move: '5...Ne7', explanation: 'El caballo retrocede pero mantiene opciones'}
+        ],
+        specialNote: '📚 <strong>LA APERTURA HISTÓRICA</strong> - Analizada desde 1769, fue jugada ocasionalmente por Morphy y Steinitz. Aunque considerada inofensiva a nivel de élite, sigue siendo un arma sorpresa válida. "La Ponziani es sólida, solo que un poco lenta" - análisis moderno.',
+        whiteWins: 36, blackWins: 30, draws: 34, advantage: "+0.2", popularity: {beginner: 40, intermediate: 35, advanced: 30, gm: 15}
+      },
+
+      "bishops-opening": {
+        id: "bishops-opening", name: "Apertura del Alfil", eco: "C23-C24",
+        family: "abiertas", classification: "apertura",
+        moves: "1.e4 e5 2.Bc4", tags: ["simple", "flexible", "tranquila"],
+        description: "Desarrollo inmediato del alfil rey. Flexible y sólida.",
+        detailedDescription: `
+          <p class="mb-4">La <strong>Apertura del Alfil</strong> es una de las aperturas más antiguas, jugada desde el siglo XVI. Desarrolla el alfil inmediatamente a su casilla más agresiva, apuntando a f7. Es más flexible que la Italiana porque las blancas no definen aún la posición del caballo de dama.</p>
+          
+          <p class="mb-4"><strong>Idea Principal:</strong> Con 2.Bc4, las blancas desarrollan rápidamente, apuntan al punto débil f7, y mantienen máxima flexibilidad. Pueden seguir con d3 (tranquilo), f4 (Gambito del Alfil), o Nf3 transponiendo a Italiana. La apertura evita teoría pesada y permite a las blancas elegir plan según la respuesta negra.</p>
+          
+          <p class="mb-4"><strong>Planes Típicos:</strong> Las blancas pueden jugar d3 y Nf3 (tranquilo), f4 (Gambito del Alfil - agresivo), o c3 preparando d4. Contra 2...Nf6, las blancas pueden transponer a Dos Caballos o Italiana. Es una apertura muy flexible ideal para jugadores que quieren mantener opciones abiertas.</p>
+          
+          <p><strong>Estilo de Juego:</strong> Flexible y sólido. Permite elegir entre juego posicional tranquilo o complicaciones tácticas según preferencia.</p>
+        `,
+        initialBoard: generateChessBoard([
+          ['r','n','b','q','k','b','n','r'],
+          ['p','p','p','p','','p','p','p'],
+          ['','','','','','','',''],
+          ['','','','','p','','',''],
+          ['','','B','','P','','',''],
+          ['','','','','','','',''],
+          ['P','P','P','P','','P','P','P'],
+          ['R','N','B','Q','K','','N','R']
+        ], [{from: 'f1', to: 'c4'}]),
+        keyMoves: [
+          {move: '1.e4 e5', explanation: 'Centro clásico'},
+          {move: '2.Bc4', explanation: 'Desarrollo inmediato apuntando a f7'},
+          {move: '2...Nf6', explanation: 'Desarrollo natural atacando e4'},
+          {move: '3.d3', explanation: 'Sólido, preparando desarrollo armonioso'},
+          {move: '3...Bc5', explanation: 'Desarrollo simétrico'},
+          {move: '4.Nf3', explanation: 'Transponiendo a variantes de la Italiana'}
+        ],
+        specialNote: '🎼 <strong>LA APERTURA FLEXIBLE</strong> - Bobby Fischer ocasionalmente la jugó en partidas de exhibición. Es perfecta para evitar preparación del oponente. Puede transponer a Italiana, Gambito del Alfil, o mantener su propia identidad.',
+        whiteWins: 35, blackWins: 31, draws: 34, advantage: "+0.1", popularity: {beginner: 50, intermediate: 40, advanced: 30, gm: 20}
+      },
+
+      "center-game": {
+        id: "center-game", name: "Apertura Central", eco: "C21-C22",
+        family: "abiertas", classification: "apertura",
+        moves: "1.e4 e5 2.d4 exd4 3.Qxd4", tags: ["agresiva", "táctica", "poco común"],
+        description: "Dama al centro temprano. Arriesgada pero agresiva.",
+        detailedDescription: `
+          <p class="mb-4">La <strong>Apertura Central</strong> representa un enfoque directo y agresivo: abrir el centro inmediatamente y desarrollar la dama. Aunque violar el principio de "no sacar la dama temprano" parece arriesgado, las blancas confían en que su ventaja de desarrollo compense la pérdida de tiempo.</p>
+          
+          <p class="mb-4"><strong>Idea Principal:</strong> Con 2.d4 exd4 3.Qxd4, las blancas abren el centro y centralizan la dama. La dama está algo expuesta pero controla casillas importantes. Las blancas buscan desarrollo rápido con Nc3, Be3, O-O-O y aprovechar su ventaja temporal antes de que las negras puedan atacar la dama con ganancia de tiempo.</p>
+          
+          <p class="mb-4"><strong>Planes Típicos:</strong> Las blancas desarrollan rápidamente con Nc3, Be3, O-O-O y buscan atacar. Las negras responden con 3...Nc6 ganando tiempo con el ataque a la dama, luego ...Nf6, ...Bc5 o ...Bb4+. La teoría considera que las negras igualan con juego preciso, pero las blancas tienen chances prácticas.</p>
+          
+          <p><strong>Estilo de Juego:</strong> Táctico y directo. Posiciones abiertas con desarrollo rápido. Ideal como arma sorpresa.</p>
+        `,
+        initialBoard: generateChessBoard([
+          ['r','n','b','q','k','b','n','r'],
+          ['p','p','p','p','','p','p','p'],
+          ['','','','','','','',''],
+          ['','','','','','','',''],
+          ['','','','Q','P','','',''],
+          ['','','','','','','',''],
+          ['P','P','P','','','P','P','P'],
+          ['R','N','B','','K','B','N','R']
+        ], [{from: 'd1', to: 'd4'}]),
+        keyMoves: [
+          {move: '1.e4 e5', explanation: 'Centro clásico'},
+          {move: '2.d4 exd4', explanation: 'Abriendo el centro'},
+          {move: '3.Qxd4', explanation: 'La dama sale temprano pero centralizada'},
+          {move: '3...Nc6', explanation: 'Ganando tiempo atacando la dama'},
+          {move: '4.Qe3', explanation: 'La dama mantiene posición central'},
+          {move: '4...Nf6', explanation: 'Desarrollo con presión sobre e4'}
+        ],
+        specialNote: '👸 <strong>LA DAMA TEMPRANA</strong> - Aunque rompe principios clásicos, Steinitz y Tarrasch la jugaron ocasionalmente. Marshall la usó como arma sorpresa. "La dama temprana es arriesgada, pero a veces funciona" - principio de apertura.',
+        whiteWins: 33, blackWins: 32, draws: 35, advantage: "+0.1", popularity: {beginner: 45, intermediate: 35, advanced: 25, gm: 10}
+      },
+
+      "kings-gambit-declined": {
+        id: "kings-gambit-declined", name: "Gambito de Rey Declinado", eco: "C30-C31",
+        family: "gambitos", classification: "defensa",
+        moves: "1.e4 e5 2.f4 Bc5", tags: ["sólida", "clásica", "estratégica"],
+        description: "Las negras rechazan el gambito. Más sólido que aceptar.",
+        detailedDescription: `
+          <p class="mb-4">El <strong>Gambito de Rey Declinado</strong> es la respuesta sólida de las negras al agresivo 2.f4. En lugar de aceptar el peón y las complicaciones que conlleva, las negras desarrollan piezas naturalmente y mantienen el peón e5, conservando sólida posición central.</p>
+          
+          <p class="mb-4"><strong>Idea Principal:</strong> Con 2...Bc5, las negras desarrollan activamente el alfil apuntando a f2, ignoran el peón f4, y mantienen el centro sólido. La idea es que las blancas han debilitado su posición con f4, y las negras pueden aprovecharlo manteniendo el peón e5 y desarrollándose normalmente.</p>
+          
+          <p class="mb-4"><strong>Planes Típicos:</strong> Las negras continúan con ...d6, ...Nf6, ...Nc6, enroque y juego posicional. Las blancas pueden jugar Nf3 y d3 (tranquilo) o fxe5 (más agresivo). La Variante Contragambito Falkbeer (2...d5) es más ambiciosa. Las posiciones resultantes favorecen ligeramente a las negras según teoría moderna.</p>
+          
+          <p><strong>Estilo de Juego:</strong> Posicional y sólido. Menos caótico que aceptar el gambito. Ideal para jugadores que prefieren posiciones equilibradas.</p>
+        `,
+        initialBoard: generateChessBoard([
+          ['r','n','b','q','k','','n','r'],
+          ['p','p','p','p','','p','p','p'],
+          ['','','','','','','',''],
+          ['','','b','','p','','',''],
+          ['','','','','P','P','',''],
+          ['','','','','','','',''],
+          ['P','P','P','P','','','P','P'],
+          ['R','N','B','Q','K','B','N','R']
+        ], [{from: 'f8', to: 'c5'}]),
+        keyMoves: [
+          {move: '1.e4 e5 2.f4', explanation: 'El Gambito de Rey'},
+          {move: '2...Bc5', explanation: 'Declinando el gambito con desarrollo activo'},
+          {move: '3.Nf3', explanation: 'Desarrollo natural de las blancas'},
+          {move: '3...d6', explanation: 'Solidificando e5'},
+          {move: '4.c3', explanation: 'Preparando d4'},
+          {move: '4...Nf6', explanation: 'Presionando e4 - las negras están bien'}
+        ],
+        specialNote: '🛡️ <strong>LA RESPUESTA SÓLIDA</strong> - Fischer consideraba que el Gambito de Rey Declinado refutaba el gambito. La moderna teoría de computadoras confirma que las negras obtienen ligera ventaja con juego preciso. Kasparov: "Declinar es más fuerte que aceptar".',
+        whiteWins: 36, blackWins: 30, draws: 34, advantage: "+0.2", popularity: {beginner: 35, intermediate: 40, advanced: 45, gm: 35}
+      },
+
+      "philidor": {
+        id: "philidor", name: "Defensa Philidor", eco: "C41",
+        family: "abiertas", classification: "defensa",
+        moves: "1.e4 e5 2.Nf3 d6", tags: ["sólida", "pasiva", "clásica"],
+        description: "Defensa sólida pero pasiva. Muy estudiada históricamente.",
+        detailedDescription: `
+          <p class="mb-4">La <strong>Defensa Philidor</strong> lleva el nombre de François-André Danican Philidor (1726-1795), el mejor jugador del siglo XVIII. Aunque en su época se consideraba la mejor defensa, la teoría moderna la juzga algo pasiva porque bloquea el desarrollo natural del alfil f8.</p>
+          
+          <p class="mb-4"><strong>Idea Principal:</strong> Con 2...d6, las negras solidifican e5 inmediatamente, evitando complicaciones tácticas. El plan es sólido pero tiene el inconveniente de que el alfil f8 tendrá dificultades para desarrollarse. La defensa es sólida pero otorga a las blancas ventaja espacial cómoda.</p>
+          
+          <p class="mb-4"><strong>Planes Típicos:</strong> Las blancas juegan d4, Bc4, O-O y buscan ventaja espacial. Las negras pueden jugar ...Nf6, ...Be7, ...O-O (sólido) o intentar ...f5 (contragambito agresivo pero arriesgado). La variante con ...exd4 y ...Nf6 es más dinámica. Las blancas suelen obtener ligera ventaja.</p>
+          
+          <p><strong>Estilo de Juego:</strong> Sólido y defensivo. Apropiado para jugadores que buscan posiciones seguras aunque algo pasivas.</p>
+        `,
+        initialBoard: generateChessBoard([
+          ['r','n','b','q','k','b','n','r'],
+          ['p','p','p','','','p','p','p'],
+          ['','','','p','','','',''],
+          ['','','','','p','','',''],
+          ['','','','','P','','',''],
+          ['','','','','','N','',''],
+          ['P','P','P','P','','P','P','P'],
+          ['R','N','B','Q','K','B','','R']
+        ], [{from: 'd7', to: 'd6'}]),
+        keyMoves: [
+          {move: '1.e4 e5 2.Nf3', explanation: 'Apertura clásica'},
+          {move: '2...d6', explanation: 'La Philidor - solidificando e5'},
+          {move: '3.d4', explanation: 'Control del centro'},
+          {move: '3...Nf6', explanation: 'Presión sobre e4'},
+          {move: '4.Nc3', explanation: 'Defendiendo e4'},
+          {move: '4...Be7', explanation: 'Desarrollo modesto pero sólido'}
+        ],
+        specialNote: '📜 <strong>LA DEFENSA HISTÓRICA</strong> - Philidor escribió en 1749: "Los peones son el alma del ajedrez". Su defensa refleja esa filosofía. Aunque algo pasiva para estándares modernos, es muy sólida. Morphy la jugaba ocasionalmente.',
+        whiteWins: 38, blackWins: 27, draws: 35, advantage: "+0.3", popularity: {beginner: 40, intermediate: 35, advanced: 30, gm: 20}
+      },
+
+      "latvian-gambit": {
+        id: "latvian-gambit", name: "Gambito Letón", eco: "C40",
+        family: "gambitos", classification: "gambito",
+        moves: "1.e4 e5 2.Nf3 f5", tags: ["agresiva", "arriesgada", "poco común"],
+        description: "Contragambito muy agresivo. Arriesgado pero sorprendente.",
+        detailedDescription: `
+          <p class="mb-4">El <strong>Gambito Letón</strong> (también llamado Greco) es uno de los contragambitos más agresivos y arriesgados del ajedrez. Las negras ofrecen el peón f inmediatamente, buscando complicaciones tácticas extremas y ataque rápido contra el rey blanco. Es jugable solo si conoces bien la teoría.</p>
+          
+          <p class="mb-4"><strong>Idea Principal:</strong> Con 2...f5, las negras contraatacan e4 de manera ultra-agresiva, ofreciendo material por desarrollo e iniciativa. La idea es 3.exf5 e4, expulsando el caballo y ganando tiempo para desarrollar con ...d6, ...Nf6, ...Bxf5. Es arriesgado porque debilita el rey y requiere cálculo preciso.</p>
+          
+          <p class="mb-4"><strong>Planes Típicos:</strong> Las negras buscan ataque rápido con ...Nf6, ...d6, ...Bxf5, ...Bd6 apuntando a h2. Las blancas pueden aceptar (3.exf5) o declinar (3.Bc4, 3.d4). La teoría considera que las blancas obtienen ventaja con juego preciso, pero las complicaciones son reales.</p>
+          
+          <p><strong>Estilo de Juego:</strong> Ultra táctico y arriesgado. Requiere valentía, cálculo preciso y conocimiento de teoría. Excelente como arma sorpresa.</p>
+        `,
+        initialBoard: generateChessBoard([
+          ['r','n','b','q','k','b','n','r'],
+          ['p','p','p','p','','','p','p'],
+          ['','','','','','','',''],
+          ['','','','','p','p','',''],
+          ['','','','','P','','',''],
+          ['','','','','','N','',''],
+          ['P','P','P','P','','P','P','P'],
+          ['R','N','B','Q','K','B','','R']
+        ], [{from: 'f7', to: 'f5'}]),
+        keyMoves: [
+          {move: '1.e4 e5 2.Nf3', explanation: 'Desarrollo clásico'},
+          {move: '2...f5!?', explanation: '¡El Gambito Letón! Ultra-agresivo y arriesgado'},
+          {move: '3.exf5', explanation: 'Aceptando el desafío'},
+          {move: '3...e4', explanation: 'Expulsando el caballo con ganancia de tiempo'},
+          {move: '4.Ne5', explanation: 'Posición crítica - requiere teoría precisa'},
+          {move: '4...Nf6', explanation: 'Desarrollo rápido buscando compensación'}
+        ],
+        specialNote: '💥 <strong>EL GAMBITO SUICIDA</strong> - Llamado "el suicidio del ajedrez" por algunos GMs. Tal y Bronstein lo jugaron ocasionalmente. Los motores lo refutan, pero en partidas prácticas puede causar pánico. "Si no sabes teoría del Letón, puedes perder en 15 jugadas".',
+        whiteWins: 42, blackWins: 28, draws: 30, advantage: "+0.4", popularity: {beginner: 25, intermediate: 30, advanced: 35, gm: 15}
+      },
+
+      // ==================== APERTURAS SEMIABIERTAS (B00-B99) ====================
+      // === 1.e4 (sin 1...e5) ===
+
+      "sicilian": {
+        id: "sicilian", name: "Defensa Siciliana", eco: "B20-B99", 
+        family: "semiabiertas", classification: "defensa",
+        moves: "1.e4 c5", tags: ["táctica", "agresiva", "desequilibrada"],
+        description: "La defensa más combativa y popular contra e4. Máximo contrajuego.",
+        detailedDescription: `
+          <p class="mb-4">La <strong>Defensa Siciliana</strong> es la respuesta más popular a 1.e4 a nivel de élite y la defensa que ha producido más victorias para las negras en la historia del ajedrez. Su nombre proviene del maestro siciliano Pietro Carrera quien la analizó en 1617. Es la elección de los jugadores que buscan máximo contrajuego y están dispuestos a aceptar riesgos.</p>
+          
+          <p class="mb-4"><strong>Idea Principal:</strong> Con 1...c5, las negras atacan d4 desde el flanco, creando una asimetría fundamental. A diferencia de 1...e5 (simétrica), la Siciliana garantiza una lucha desequilibrada donde ambos lados tienen oportunidades de ganar. Después de 2.Nf3 y 3.d4 cxd4 4.Nxd4, las negras han cambiado su peón c por el peón d blanco, obteniendo mayoría central (d6+e6 o d6+e5) y columna c semiabierta para presionar c2.</p>
+          
+          <p class="mb-4"><strong>Planes Típicos:</strong> Las blancas buscan ataque en el flanco de rey, típicamente con Nc3, Be3, f3, Qd2, O-O-O y avalancha de peones g4-g5-h4. Las negras contraatacan en el flanco de dama con ...b5-b4 o en el centro con ...d5. Las variantes incluyen Najdorf (5...a6), Dragón (5...g6), Sveshnikov (5...e5), Scheveningen (5...e6), cada una con planes específicos. Es una apertura de preparación profunda.</p>
+          
+          <p><strong>Estilo de Juego:</strong> Táctico, agresivo y desequilibrado. Posiciones complejas con ataques mutuos. Requiere valentía, cálculo preciso y preparación teórica sólida.</p>
+        `,
+        initialBoard: generateChessBoard([
+          ['r','n','b','q','k','b','n','r'],
+          ['p','p','','p','p','p','p','p'],
+          ['','','','','','','',''],
+          ['','','p','','','','',''],
+          ['','','','','P','','',''],
+          ['','','','','','','',''],
+          ['P','P','P','P','','P','P','P'],
+          ['R','N','B','Q','K','B','N','R']
+        ], [{from: 'c7', to: 'c5'}]),
+        keyMoves: [
+          {move: '1.e4 c5', explanation: 'La Siciliana - máxima asimetría y contrajuego'},
+          {move: '2.Nf3', explanation: 'Desarrollo natural preparando d4'},
+          {move: '2...d6', explanation: 'Preparando ...Nf6 y controlando e5 (Siciliana Clásica)'},
+          {move: '3.d4 cxd4', explanation: 'Cambiando el peón c por el peón d central'},
+          {move: '4.Nxd4', explanation: 'Las blancas recuperan el peón con desarrollo'},
+          {move: '4...Nf6', explanation: 'Atacando e4 - la lucha por el centro comienza'}
+        ],
+        specialNote: '👑 <strong>LA REINA DE LAS DEFENSAS</strong> - Bobby Fischer ganó el 77% de sus partidas con Siciliana. Garry Kasparov la jugó durante toda su carrera. Es la defensa más analizada en la historia - existen más de 30 variantes principales. "Si quieres una posición igualada, juega 1...e5. Si quieres ganar con negras, juega 1...c5".',
+        whiteWins: 33, blackWins: 30, draws: 37, advantage: "+0.2", popularity: {beginner: 40, intermediate: 75, advanced: 90, gm: 95}
+      },
+
+      "sicilian-najdorf": {
+        id: "sicilian-najdorf", name: "Siciliana Najdorf", eco: "B90-B99", 
+        family: "semiabiertas", classification: "defensa",
+        moves: "1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6", tags: ["táctica", "compleja", "aguda"],
+        description: "El Rolls Royce de las aperturas. Ultra táctica y profunda.",
+        detailedDescription: `
+          <p class="mb-4">La <strong>Najdorf</strong> es la variante más crítica y compleja de la Defensa Siciliana. Nombrada en honor al Gran Maestro argentino-polaco Miguel Najdorf, quien la desarrolló en los años 1940, se ha convertido en la defensa favorita de los jugadores más agresivos del mundo.</p>
+          
+          <p class="mb-4"><strong>Idea Principal:</strong> El misterioso movimiento 5...a6 prepara múltiples planes: expansión en el flanco de dama con ...b5, control de b5 para evitar saltos de caballos blancos, y posible ...e5 en el futuro. Es una jugada de "espera útil" que mantiene máxima flexibilidad.</p>
+          
+          <p class="mb-4"><strong>Planes Típicos:</strong> Las negras buscan contraatacar en el flanco de dama con ...b5-b4 o ...Nbd7-Nc5, presionar e4, y si las blancas enrocan largo, lanzar un ataque de peones ...b5-b4-b3. Las blancas pueden elegir entre el violento Ataque Inglés (Be3, f3, Qd2, O-O-O), el posicional 6.Be2, o el agudo 6.Bg5 (Variante del Veneno).</p>
+          
+          <p><strong>Estilo de Juego:</strong> Ultra táctico y complejo. Requiere cálculo preciso, memoria de variantes y nervios de acero. Las posiciones suelen explotar en tácticas violentas.</p>
+        `,
+        initialBoard: generateChessBoard([
+          ['r','n','b','q','k','b','','r'],
+          ['','p','','','p','p','p','p'],
+          ['p','','','p','','n','',''],
+          ['','','','','','','',''],
+          ['','','','N','P','','',''],
+          ['','','N','','','','',''],
+          ['P','P','P','','','P','P','P'],
+          ['R','','B','Q','K','B','','R']
+        ], [{from: 'a7', to: 'a6'}]),
+        keyMoves: [
+          {move: '1.e4 c5', explanation: 'La Siciliana: máximo contrajuego asimétrico'},
+          {move: '2.Nf3 d6', explanation: 'Preparando ...Nf6 y controlando e5'},
+          {move: '3.d4 cxd4', explanation: 'Abriendo el centro y la columna c'},
+          {move: '4.Nxd4 Nf6', explanation: 'Desarrollo natural atacando e4'},
+          {move: '5.Nc3 a6', explanation: '¡La jugada Najdorf! Flexibilidad máxima y control de b5'},
+          {move: '6.Be3', explanation: 'El Ataque Inglés - preparando enroque largo y ataque'}
+        ],
+        specialNote: '🔥 <strong>EL ARMA DE LOS CAMPEONES</strong> - Fischer la jugó casi exclusivamente durante toda su carrera. Kasparov la usó para defender su título mundial. Carlsen la emplea en las partidas más críticas. Se dice que "si quieres ser Gran Maestro, debes saber jugar la Najdorf".',
+        whiteWins: 34, blackWins: 29, draws: 37, advantage: "+0.3", popularity: {beginner: 20, intermediate: 50, advanced: 80, gm: 95}
+      },
+
+      "sicilian-dragon": {
+        id: "sicilian-dragon", name: "Siciliana Variante del Dragón", eco: "B70-B79",
+        family: "semiabiertas", classification: "defensa",
+        moves: "1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 g6", tags: ["táctica", "agresiva", "compleja"],
+        description: "Fianchetto agresivo. Ataques mutuos en flancos opuestos.",
+        whiteWins: 35, blackWins: 28, draws: 37, advantage: "+0.3", popularity: {beginner: 25, intermediate: 55, advanced: 75, gm: 85}
+      },
+
+      "sicilian-sveshnikov": {
+        id: "sicilian-sveshnikov", name: "Siciliana Sveshnikov", eco: "B33",
+        family: "semiabiertas", classification: "defensa",
+        moves: "1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 e5", tags: ["dinámica", "moderna", "compleja"],
+        description: "Variante moderna muy dinámica. Debilidades compensadas por actividad.",
+        whiteWins: 35, blackWins: 28, draws: 37, advantage: "+0.3", popularity: {beginner: 20, intermediate: 50, advanced: 75, gm: 85}
+      },
+
+      "sicilian-accelerated-dragon": {
+        id: "sicilian-accelerated-dragon", name: "Siciliana Dragón Acelerado", eco: "B34-B39",
+        family: "semiabiertas", classification: "defensa",
+        moves: "1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 g6", tags: ["flexible", "sólida", "táctica"],
+        description: "Fianchetto sin ...d6. Evita el Ataque Yugoslavo.",
+        whiteWins: 34, blackWins: 29, draws: 37, advantage: "+0.2", popularity: {beginner: 25, intermediate: 50, advanced: 70, gm: 75}
+      },
+
+      "sicilian-scheveningen": {
+        id: "sicilian-scheveningen", name: "Siciliana Scheveningen", eco: "B80-B89",
+        family: "semiabiertas", classification: "defensa",
+        moves: "1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 e6", tags: ["flexible", "sólida", "posicional"],
+        description: "Estructura flexible con ...e6 y ...d6. Muy sólida.",
+        whiteWins: 34, blackWins: 29, draws: 37, advantage: "+0.2", popularity: {beginner: 20, intermediate: 45, advanced: 70, gm: 80}
+      },
+
+      "sicilian-kalashnikov": {
+        id: "sicilian-kalashnikov", name: "Siciliana Kalashnikov", eco: "B32",
+        family: "semiabiertas", classification: "defensa",
+        moves: "1.e4 c5 2.Nf3 Nc6 3.d4 cxd4 4.Nxd4 e5 5.Nb5 d6", tags: ["agresiva", "moderna", "táctica"],
+        description: "Similar a Sveshnikov pero más agresiva. Muy táctica.",
+        whiteWins: 36, blackWins: 28, draws: 36, advantage: "+0.3", popularity: {beginner: 15, intermediate: 40, advanced: 65, gm: 70}
+      },
+
+      "caro-kann": {
+        id: "caro-kann", name: "Defensa Caro-Kann", eco: "B10-B19", 
+        family: "semiabiertas", classification: "defensa",
+        moves: "1.e4 c6", tags: ["sólida", "posicional", "defensiva"],
+        description: "Súper sólida. Similar a Francesa pero alfil c8 fuera de cadena.",
+        detailedDescription: `
+          <p class="mb-4">La <strong>Defensa Caro-Kann</strong> lleva el nombre de los maestros Horatio Caro y Marcus Kann, quienes la analizaron en 1886. Es una de las defensas más sólidas y confiables contra 1.e4, combinando la solidez de la Francesa con la ventaja de liberar el alfil c8.</p>
+          
+          <p class="mb-4"><strong>Idea Principal:</strong> El discreto 1...c6 prepara ...d5 en el siguiente movimiento. A diferencia de la Francesa (1...e6), aquí el alfil c8 no queda encerrado detrás de la cadena de peones. Las negras buscan una posición sólida con pocas debilidades y contrajuego en el medio juego.</p>
+          
+          <p class="mb-4"><strong>Planes Típicos:</strong> Las negras completan desarrollo con ...Bf5 o ...Bg4, luego ...Nd7-Nf6-Ne4. La estructura de peones es sólida y las negras buscan igualar y ganar en el final técnico. Las blancas pueden elegir entre la línea del Avance (3.e5), la Clásica (3.Nc3 dxe4 4.Nxe4 Bf5), o variantes más agudas como el Ataque Panov (3.exd5 cxd5 4.c4).</p>
+          
+          <p><strong>Estilo de Juego:</strong> Posicional y estratégico. Ideal para jugadores que prefieren posiciones sólidas y ganar con técnica superior en finales.</p>
+        `,
+        initialBoard: generateChessBoard([
+          ['r','n','b','q','k','b','n','r'],
+          ['p','p','','p','p','p','p','p'],
+          ['','','p','','','','',''],
+          ['','','','p','','','',''],
+          ['','','','','P','','',''],
+          ['','','','','','','',''],
+          ['P','P','P','P','','P','P','P'],
+          ['R','N','B','Q','K','B','N','R']
+        ], [{from: 'c7', to: 'c6'}]),
+        keyMoves: [
+          {move: '1.e4 c6', explanation: 'Preparando ...d5 con solidez máxima'},
+          {move: '2.d4 d5', explanation: 'Desafiando el centro blanco'},
+          {move: '3.Nc3 dxe4', explanation: 'Simplificando el centro'},
+          {move: '4.Nxe4 Bf5', explanation: '¡La clave! El alfil sale antes de jugar ...e6'},
+          {move: '5.Ng3 Bg6', explanation: 'El alfil encuentra una diagonal segura'},
+          {move: '6.Nf3 Nd7', explanation: 'Desarrollo armonioso completándose'}
+        ],
+        specialNote: '🛡️ <strong>LA FORTALEZA</strong> - Anatoly Karpov la usó durante toda su carrera con resultados excepcionales. Es la defensa con el menor porcentaje de derrotas entre las principales. Capablanca dijo: "La Caro-Kann es el camino más seguro a la igualdad".',
+        whiteWins: 34, blackWins: 28, draws: 38, advantage: "+0.2", popularity: {beginner: 50, intermediate: 70, advanced: 80, gm: 85}
+      },
+
+      "french": {
+        id: "french", name: "Defensa Francesa", eco: "C00-C19", 
+        family: "semiabiertas", classification: "defensa",
+        moves: "1.e4 e6", tags: ["sólida", "estratégica", "compleja"],
+        description: "Estructura sólida pero alfil c8 problemático. Muy estratégica.",
+        detailedDescription: `
+          <p class="mb-4">La <strong>Defensa Francesa</strong> es una de las aperturas más ricas estratégicamente en el ajedrez. Su nombre proviene de un match por correspondencia Londres-París en 1834. Es la elección de jugadores que aman la complejidad estratégica y no temen posiciones cerradas.</p>
+          
+          <p class="mb-4"><strong>Idea Principal:</strong> Con 1...e6, las negras preparan ...d5 con sólido soporte. La estructura resultante es muy definida: las blancas tendrán mayoría de peones en el flanco de rey (e5, f4, posible g4), mientras las negras tendrán mayoría en el flanco de dama. El gran problema de las negras es el "alfil malo" de c8, encerrado por la cadena e6-d5.</p>
+          
+          <p class="mb-4"><strong>Planes Típicos:</strong> Las blancas empujan e5 y atacan en el flanco de rey con f4-f5, Nf3-g5, Qf3, etc. Las negras buscan ruptura con ...c5 (atacando d4 y la cadena), o ...f6 (atacando e5). El medio juego es una batalla estratégica profunda entre el ataque blanco y el contrajuego negro en el flanco de dama.</p>
+          
+          <p><strong>Estilo de Juego:</strong> Estratégico y complejo con lucha de largo plazo. Posiciones cerradas que requieren comprensión profunda de estructuras de peones.</p>
+        `,
+        initialBoard: generateChessBoard([
+          ['r','n','b','q','k','b','n','r'],
+          ['p','p','p','p','','p','p','p'],
+          ['','','','','p','','',''],
+          ['','','','p','','','',''],
+          ['','','','','P','','',''],
+          ['','','','','','','',''],
+          ['P','P','P','P','','P','P','P'],
+          ['R','N','B','Q','K','B','N','R']
+        ], [{from: 'e7', to: 'e6'}]),
+        keyMoves: [
+          {move: '1.e4 e6', explanation: 'Sólido soporte para ...d5'},
+          {move: '2.d4 d5', explanation: 'Desafiando e4 inmediatamente'},
+          {move: '3.Nc3 Nf6', explanation: 'Presión adicional sobre e4 (Variante Clásica)'},
+          {move: '4.e5 Nfd7', explanation: 'El caballo se retira pero controlará c5 y e5'},
+          {move: '5.f4', explanation: 'Reforzando e5 y preparando ataque en el flanco de rey'},
+          {move: '5...c5', explanation: 'Contragolpe típico atacando la cadena de peones'}
+        ],
+        specialNote: '🧠 <strong>LA APERTURA DE LOS ESTRATEGAS</strong> - Viktor Korchnoi, Tigran Petrosian, Wolfgang Uhlmann y Evgeny Bareev la convirtieron en un arma temible. Botvinnik dijo: "Si quieres ganar, juega 1.e4. Si quieres tablas, juega 1.d4. Si quieres sufrir, juega la Francesa". Es la defensa que más divide opiniones: o la amas o la odias.',
+        whiteWins: 35, blackWins: 29, draws: 36, advantage: "+0.2", popularity: {beginner: 35, intermediate: 60, advanced: 75, gm: 80}
+      },
+
+      "pirc": {
+        id: "pirc", name: "Defensa Pirc", eco: "B07-B09", 
+        family: "semiabiertas", classification: "defensa",
+        moves: "1.e4 d6 2.d4 Nf6 3.Nc3 g6", tags: ["hipermoderna", "flexible", "táctica"],
+        description: "Control del centro desde lejos. Fianchetto y contraataque.",
+        whiteWins: 36, blackWins: 28, draws: 36, advantage: "+0.3", popularity: {beginner: 35, intermediate: 55, advanced: 70, gm: 75}
+      },
+
+      "modern-defense": {
+        id: "modern-defense", name: "Defensa Moderna", eco: "B06",
+        family: "semiabiertas", classification: "defensa",
+        moves: "1.e4 g6", tags: ["hipermoderna", "flexible", "poco común"],
+        description: "Fianchetto inmediato. Similar a Pirc pero más flexible.",
+        whiteWins: 37, blackWins: 27, draws: 36, advantage: "+0.3", popularity: {beginner: 30, intermediate: 45, advanced: 60, gm: 55}
+      },
+
+      "alekhine": {
+        id: "alekhine", name: "Defensa Alekhine", eco: "B02-B05",
+        family: "semiabiertas", classification: "defensa",
+        moves: "1.e4 Nf6", tags: ["hipermoderna", "provocativa", "táctica"],
+        description: "Provoca el avance de peones blancos. Hipermoderna y arriesgada.",
+        whiteWins: 38, blackWins: 27, draws: 35, advantage: "+0.4", popularity: {beginner: 25, intermediate: 40, advanced: 55, gm: 45}
+      },
+
+      "scandinavian": {
+        id: "scandinavian", name: "Defensa Escandinava", eco: "B01",
+        family: "semiabiertas", classification: "defensa",
+        moves: "1.e4 d5", tags: ["simple", "directa", "poco común"],
+        description: "Desafío inmediato a e4. Simple pero la dama se desarrolla temprano.",
+        whiteWins: 37, blackWins: 28, draws: 35, advantage: "+0.3", popularity: {beginner: 55, intermediate: 50, advanced: 45, gm: 35}
+      },
+
+      "petroff": {
+        id: "petroff", name: "Defensa Petroff", eco: "C42-C43", 
+        family: "semiabiertas", classification: "defensa",
+        moves: "1.e4 e5 2.Nf3 Nf6", tags: ["sólida", "defensiva", "equilibrada"],
+        description: "Contraataque inmediato en e4. Muy sólida y drawish.",
+        whiteWins: 32, blackWins: 28, draws: 40, advantage: "+0.1", popularity: {beginner: 40, intermediate: 55, advanced: 70, gm: 80}
+      },
+
+      "owen-defense": {
+        id: "owen-defense", name: "Defensa Owen", eco: "B00",
+        family: "semiabiertas", classification: "defensa",
+        moves: "1.e4 b6", tags: ["irregular", "flexible", "poco común"],
+        description: "Fianchetto del alfil dama. Poco convencional pero jugable.",
+        whiteWins: 40, blackWins: 25, draws: 35, advantage: "+0.5", popularity: {beginner: 20, intermediate: 25, advanced: 30, gm: 15}
+      },
+
+      // ==================== APERTURAS CERRADAS (D00-D69) ====================
+      // === 1.d4 d5 ===
+
+      "queens-gambit": {
+        id: "queens-gambit", name: "Gambito de Dama", eco: "D06-D69", 
+        family: "cerradas", classification: "apertura",
+        moves: "1.d4 d5 2.c4", tags: ["posicional", "clásica", "estratégica"],
+        description: "La apertura d4 más clásica. Control posicional del centro.",
+        detailedDescription: `
+          <p class="mb-4">El <strong>Gambito de Dama</strong> es la apertura d4 más antigua y respetada, documentada desde el siglo XV. A pesar de su nombre, no es un verdadero gambito - el peón c4 no puede ser retenido con seguridad. Es la apertura más jugada en el más alto nivel del ajedrez.</p>
+          
+          <p class="mb-4"><strong>Idea Principal:</strong> Con 2.c4, las blancas atacan d5 y buscan intercambiar el peón c por el peón d negro, obteniendo mayoría central (d4-e4 potencial) y mejor control del centro. Si las negras capturan (Gambito Aceptado), las blancas recuperan el peón fácilmente con desarrollo. Si declinan, se desarrolla una batalla estratégica profunda por el control del centro.</p>
+          
+          <p class="mb-4"><strong>Planes Típicos:</strong> Las blancas desarrollan con Nc3, Nf3, Bf4 o Bg5, enrocan y buscan presionar d5 o avanzar e4. Las negras pueden declinar con ...e6 (QGD), ...c6 (Eslava), o defender d5 con piezas. Cada sistema lleva a estructuras únicas y planes específicos de medio juego.</p>
+          
+          <p><strong>Estilo de Juego:</strong> Posicional profundo con complejidad estratégica. Las mejores partidas del Gambito de Dama son clases maestras de maniobras y estrategia.</p>
+        `,
+        initialBoard: generateChessBoard([
+          ['r','n','b','q','k','b','n','r'],
+          ['p','p','p','','p','p','p','p'],
+          ['','','','','','','',''],
+          ['','','','p','','','',''],
+          ['','','P','P','','','',''],
+          ['','','','','','','',''],
+          ['P','P','','','P','P','P','P'],
+          ['R','N','B','Q','K','B','N','R']
+        ], [{from: 'c2', to: 'c4'}]),
+        keyMoves: [
+          {move: '1.d4 d5', explanation: 'Centro clásico'},
+          {move: '2.c4', explanation: 'El Gambito - atacando d5 para dominar el centro'},
+          {move: '2...e6', explanation: 'Declinando el gambito, apoyando d5 (QGD)'},
+          {move: '3.Nc3 Nf6', explanation: 'Desarrollo natural de ambos lados'},
+          {move: '4.Bg5', explanation: 'Clavando el caballo y presionando d5'},
+          {move: '4...Be7', explanation: 'Rompiendo la clavada y preparando enroque'}
+        ],
+        specialNote: '👑 <strong>LA APERTURA DE LOS CAMPEONES</strong> - Todos los Campeones del Mundo desde Steinitz hasta Carlsen la han jugado regularmente. Popularizada masivamente por la serie de Netflix "The Queens Gambit" (Gambito de Dama). Emanuel Lasker la jugó en 14 de sus 34 partidas del Campeonato Mundial.',
+        whiteWins: 38, blackWins: 27, draws: 35, advantage: "+0.2", popularity: {beginner: 50, intermediate: 75, advanced: 85, gm: 90}
+      },
+
+      "queens-gambit-accepted": {
+        id: "queens-gambit-accepted", name: "Gambito de Dama Aceptado", eco: "D20-D29",
+        family: "cerradas", classification: "defensa",
+        moves: "1.d4 d5 2.c4 dxc4", tags: ["táctica", "dinámica", "sólida"],
+        description: "Las negras aceptan el gambito. No pueden retener el peón.",
+        whiteWins: 37, blackWins: 28, draws: 35, advantage: "+0.3", popularity: {beginner: 45, intermediate: 60, advanced: 70, gm: 75}
+      },
+
+      "slav": {
+        id: "slav", name: "Defensa Eslava", eco: "D10-D19",
+        family: "cerradas", classification: "defensa",
+        moves: "1.d4 d5 2.c4 c6", tags: ["sólida", "flexible", "popular"],
+        description: "Defensa con ...c6. Sólida y flexible, muy popular.",
+        whiteWins: 36, blackWins: 28, draws: 36, advantage: "+0.2", popularity: {beginner: 40, intermediate: 65, advanced: 80, gm: 90}
+      },
+
+      "semi-slav": {
+        id: "semi-slav", name: "Defensa Semi-Eslava", eco: "D43-D49",
+        family: "cerradas", classification: "defensa",
+        moves: "1.d4 d5 2.c4 c6 3.Nf3 Nf6 4.Nc3 e6", tags: ["compleja", "profunda", "táctica"],
+        description: "Combina Eslava y QGD. Muy compleja y profunda.",
+        whiteWins: 37, blackWins: 27, draws: 36, advantage: "+0.3", popularity: {beginner: 25, intermediate: 55, advanced: 80, gm: 90}
+      },
+
+      "baltic-defense": {
+        id: "baltic-defense", name: "Defensa Báltica", eco: "D02",
+        family: "cerradas", classification: "defensa",
+        moves: "1.d4 d5 2.c4 Bf5", tags: ["poco común", "agresiva", "arriesgada"],
+        description: "Desarrollo temprano del alfil. Poco común pero sorprendente.",
+        whiteWins: 39, blackWins: 26, draws: 35, advantage: "+0.4", popularity: {beginner: 30, intermediate: 35, advanced: 40, gm: 20}
+      },
+
+      "tarrasch-defense": {
+        id: "tarrasch-defense", name: "Defensa Tarrasch", eco: "D32-D34",
+        family: "cerradas", classification: "defensa",
+        moves: "1.d4 d5 2.c4 e6 3.Nc3 c5", tags: ["dinámica", "activa", "poco común"],
+        description: "Contraataque central con ...c5. Activa pero arriesgada.",
+        whiteWins: 38, blackWins: 27, draws: 35, advantage: "+0.3", popularity: {beginner: 25, intermediate: 45, advanced: 60, gm: 55}
+      },
+
+      "albin-counter": {
+        id: "albin-counter", name: "Contragambito Albin", eco: "D08-D09",
+        family: "gambitos", classification: "gambito",
+        moves: "1.d4 d5 2.c4 e5", tags: ["agresiva", "poco común", "táctica"],
+        description: "Contragambito agresivo con ...e5. Muy poco común.",
+        whiteWins: 40, blackWins: 26, draws: 34, advantage: "+0.5", popularity: {beginner: 20, intermediate: 30, advanced: 35, gm: 15}
+      },
+
+      "chigorin-defense": {
+        id: "chigorin-defense", name: "Defensa Chigorin", eco: "D07",
+        family: "cerradas", classification: "defensa",
+        moves: "1.d4 d5 2.c4 Nc6", tags: ["poco común", "flexible", "arriesgada"],
+        description: "Desarrollo del caballo a c6. Poco ortodoxa pero jugable.",
+        whiteWins: 39, blackWins: 26, draws: 35, advantage: "+0.4", popularity: {beginner: 20, intermediate: 30, advanced: 40, gm: 25}
+      },
+
+      // ==================== DEFENSAS INDIAS (E00-E99) ====================
+      // === 1.d4 Nf6 ===
+
+      "kings-indian": {
+        id: "kings-indian", name: "Defensa India de Rey", eco: "E60-E99", 
+        family: "indias", classification: "defensa",
+        moves: "1.d4 Nf6 2.c4 g6 3.Nc3 Bg7", tags: ["táctica", "agresiva", "hipermoderna"],
+        description: "Fianchetto del alfil rey. Contraataque agresivo en el flanco de rey.",
+        detailedDescription: `
+          <p class="mb-4">La <strong>Defensa India de Rey</strong> es la respuesta más agresiva y dinámica contra 1.d4. Popularizada por David Bronstein, Isaac Boleslavsky y especialmente Bobby Fischer, quien la convirtió en su arma principal contra 1.d4. Representa la quintaesencia del ajedrez hipermoderno.</p>
+          
+          <p class="mb-4"><strong>Idea Principal:</strong> Las negras permiten que las blancas construyan un centro de peones masivo (d4, c4, e4), pero planean atacarlo desde lejos con el "dragón" de g7, el alfil de casillas negras. El fianchetto g7-g6-Bg7 crea una batería diagonal apuntando al centro blanco. Las negras no pelean el centro inicialmente, pero preparan destruirlo con ...e5 o ...c5.</p>
+          
+          <p class="mb-4"><strong>Planes Típicos:</strong> Las negras enrocan y lanzan un ataque de peones en el flanco de rey: ...e5, ...Nh5, ...f5, ...Nf4, ...g5-g4, buscando mate. Las blancas contraatacan en el flanco de dama con c5, a4-a5, b4, creando carreras de ataques simultáneos. Es común que cada bando ataque el rey enemigo en flancos opuestos.</p>
+          
+          <p><strong>Estilo de Juego:</strong> Ultra táctico y agresivo. Requiere valentía y cálculo preciso. Las posiciones explotan frecuentemente en tácticas violentas.</p>
+        `,
+        systemBoard: generateChessBoard([
+          ['r','','b','q','','r','k',''],
+          ['p','p','p','','','','b','p'],
+          ['','','n','','p','n','p',''],
+          ['','','','p','p','','',''],
+          ['','','P','P','P','','',''],
+          ['','','N','','','N','',''],
+          ['P','P','','','','P','P','P'],
+          ['R','','B','Q','','R','K','']
+        ], []),
+        initialBoard: generateChessBoard([
+          ['r','n','b','q','k','','n','r'],
+          ['p','p','p','p','p','p','','p'],
+          ['','','','','','n','p',''],
+          ['','','','','','','',''],
+          ['','','P','P','','','',''],
+          ['','','N','','','','',''],
+          ['P','P','','','P','P','P','P'],
+          ['R','','B','Q','K','B','N','R']
+        ], [{from: 'f8', to: 'g7'}]),
+        keyMoves: [
+          {move: '1.d4 Nf6', explanation: 'Desarrollo hipermoderno'},
+          {move: '2.c4 g6', explanation: 'Preparando fianchetto - la idea clave'},
+          {move: '3.Nc3 Bg7', explanation: 'El dragón de g7 nace - apuntando al centro'},
+          {move: '4.e4 d6', explanation: 'Las blancas construyen centro; negras se preparan para ...e5'},
+          {move: '5.Nf3 O-O', explanation: 'Seguridad del rey antes de atacar'},
+          {move: '6.Be2 e5', explanation: '¡Contraataque! Desafiando el centro blanco'}
+        ],
+        specialNote: '🐉 <strong>EL DRAGÓN CONTRAATACA</strong> - Bobby Fischer la usó para ganar el Campeonato de EEUU con 11/11. Kasparov la jugó en su match de 1985 contra Karpov con resultados devastadores. Radjabov la sigue usando en 2020s. "Dale a un jugador la India de Rey y aprenderá a atacar el rey" - dicho famoso.',
+        whiteWins: 37, blackWins: 28, draws: 35, advantage: "+0.3", popularity: {beginner: 40, intermediate: 65, advanced: 80, gm: 85}
+      },
+
+      "nimzo-indian": {
+        id: "nimzo-indian", name: "Defensa Nimzo-India", eco: "E20-E59", 
+        family: "indias", classification: "defensa",
+        moves: "1.d4 Nf6 2.c4 e6 3.Nc3 Bb4", tags: ["posicional", "flexible", "profunda"],
+        description: "Clavada del caballo c3. Una de las defensas más sólidas y profundas.",
+        whiteWins: 36, blackWins: 28, draws: 36, advantage: "+0.2", popularity: {beginner: 30, intermediate: 65, advanced: 85, gm: 95}
+      },
+
+      "queens-indian": {
+        id: "queens-indian", name: "Defensa India de Dama", eco: "E12-E19",
+        family: "indias", classification: "defensa",
+        moves: "1.d4 Nf6 2.c4 e6 3.Nf3 b6", tags: ["posicional", "sólida", "flexible"],
+        description: "Fianchetto del alfil dama. Muy sólida y flexible.",
+        whiteWins: 36, blackWins: 28, draws: 36, advantage: "+0.2", popularity: {beginner: 25, intermediate: 55, advanced: 75, gm: 85}
+      },
+
+      "grunfeld": {
+        id: "grunfeld", name: "Defensa Grünfeld", eco: "D70-D99", 
+        family: "indias", classification: "defensa",
+        moves: "1.d4 Nf6 2.c4 g6 3.Nc3 d5", tags: ["hipermoderna", "táctica", "dinámica"],
+        description: "Permite centro blanco para atacarlo. Ultra dinámica y táctica.",
+        whiteWins: 37, blackWins: 27, draws: 36, advantage: "+0.3", popularity: {beginner: 25, intermediate: 60, advanced: 85, gm: 95}
+      },
+
+      "bogo-indian": {
+        id: "bogo-indian", name: "Defensa Bogo-India", eco: "E11",
+        family: "indias", classification: "defensa",
+        moves: "1.d4 Nf6 2.c4 e6 3.Nf3 Bb4+", tags: ["sólida", "flexible", "simple"],
+        description: "Jaque en b4. Simple y sólida, fácil de jugar.",
+        whiteWins: 35, blackWins: 29, draws: 36, advantage: "+0.2", popularity: {beginner: 35, intermediate: 50, advanced: 65, gm: 60}
+      },
+
+      "benoni": {
+        id: "benoni", name: "Defensa Benoni", eco: "A60-A79",
+        family: "indias", classification: "defensa",
+        moves: "1.d4 Nf6 2.c4 c5 3.d5", tags: ["agresiva", "desequilibrada", "táctica"],
+        description: "Contraataque con ...c5. Desequilibrada y agresiva.",
+        whiteWins: 38, blackWins: 27, draws: 35, advantage: "+0.4", popularity: {beginner: 25, intermediate: 45, advanced: 65, gm: 60}
+      },
+
+      "benko-gambit": {
+        id: "benko-gambit", name: "Gambito Benko (Volga)", eco: "A57-A59",
+        family: "gambitos", classification: "gambito",
+        moves: "1.d4 Nf6 2.c4 c5 3.d5 b5", tags: ["gambito", "posicional", "compleja"],
+        description: "Sacrificio de peón por presión posicional duradera.",
+        whiteWins: 37, blackWins: 27, draws: 36, advantage: "+0.3", popularity: {beginner: 20, intermediate: 40, advanced: 60, gm: 55}
+      },
+
+      "budapest": {
+        id: "budapest", name: "Gambito Budapest", eco: "A51-A52",
+        family: "gambitos", classification: "gambito",
+        moves: "1.d4 Nf6 2.c4 e5", tags: ["gambito", "agresiva", "poco común"],
+        description: "Contragambito con ...e5. Poco común pero peligroso.",
+        whiteWins: 39, blackWins: 26, draws: 35, advantage: "+0.4", popularity: {beginner: 30, intermediate: 40, advanced: 45, gm: 25}
+      },
+
+      "dutch-defense": {
+        id: "dutch-defense", name: "Defensa Holandesa", eco: "A80-A99",
+        family: "indias", classification: "defensa",
+        moves: "1.d4 f5", tags: ["agresiva", "arriesgada", "poco común"],
+        description: "Avance temprano de f5. Agresiva pero debilita al rey.",
+        whiteWins: 38, blackWins: 27, draws: 35, advantage: "+0.4", popularity: {beginner: 25, intermediate: 40, advanced: 55, gm: 45}
+      },
+
+      // ==================== SISTEMAS UNIVERSALES ====================
+
+      "london-system": {
+        id: "london-system", name: "Sistema Londres", eco: "D02", 
+        family: "sistemas", classification: "sistema",
+        moves: "1.d4 d5 2.Bf4 (o 2.Nf3 Nf6 3.Bf4)", tags: ["simple", "sólida", "popular"],
+        description: "Sistema sólido y fácil de jugar. Muy popular en todos los niveles.",
+        detailedDescription: `
+          <p class="mb-4">El <strong>Sistema Londres</strong> ha experimentado una revolución en los últimos 15 años, pasando de ser una apertura "perezosa" a convertirse en un arma seria en el ajedrez de élite. Su popularidad se disparó cuando Magnus Carlsen comenzó a usarlo regularmente.</p>
+          
+          <p class="mb-4"><strong>Idea Principal:</strong> Las blancas desarrollan el alfil a f4 temprano (antes de jugar e3), creando una formación sólida y flexible. La estructura típica incluye: d4, Nf3, e3, Bd3, Nbd2, c3, h3. Las blancas evitan teoría pesada y juegan una posición sólida con pocas debilidades, lista para atacar según lo que hagan las negras.</p>
+          
+          <p class="mb-4"><strong>Planes Típicos:</strong> Las blancas completan desarrollo tranquilamente y luego buscan Ne5, empuje h4-h5 en el flanco de rey, o e4 en el centro. Contra enroque corto negro, las blancas pueden atacar con h4-h5-Bxh7+. La clave es que las blancas juegan su plan independientemente de la configuración negra.</p>
+          
+          <p><strong>Estilo de Juego:</strong> Sistema universal fácil de aprender. Ideal para jugadores que quieren evitar preparación teórica y jugar posiciones comprensibles.</p>
+        `,
+        systemBoard: generateChessBoard([
+          ['r','','b','q','r','','k',''],
+          ['p','p','p','','','p','b','p'],
+          ['','','n','','p','n','p',''],
+          ['','','','p','','','',''],
+          ['','','','P','','B','',''],
+          ['','','N','B','P','N','','P'],
+          ['P','P','P','','','P','P',''],
+          ['R','','','Q','','R','K','']
+        ], []),
+        initialBoard: generateChessBoard([
+          ['r','n','b','q','k','b','n','r'],
+          ['p','p','p','','p','p','p','p'],
+          ['','','','','','','',''],
+          ['','','','p','','','',''],
+          ['','','','P','','B','',''],
+          ['','','','','','N','',''],
+          ['P','P','P','','P','P','P','P'],
+          ['R','N','B','Q','K','','','R']
+        ], [{from: 'c1', to: 'f4'}]),
+        keyMoves: [
+          {move: '1.d4 d5', explanation: 'Centro clásico'},
+          {move: '2.Bf4', explanation: 'La idea del Sistema - desarrollo temprano del alfil'},
+          {move: '2...Nf6', explanation: 'Desarrollo natural'},
+          {move: '3.e3', explanation: 'Sólido, preparando Bd3'},
+          {move: '3...e6', explanation: 'Las negras también desarrollan solidez'},
+          {move: '4.Nd2', explanation: 'Preparando c3 y evitando ...Nh5 ganando el alfil'}
+        ],
+        specialNote: '🔧 <strong>EL SISTEMA UNIVERSAL</strong> - Magnus Carlsen lo popularizó en 2010s ganando partidas clave en Candidatos y Campeonatos. Es la apertura más jugada por debajo de 2000 Elo. "No necesitas memorizar 20 jugadas, solo entender los planes" - principio del Londres.',
+        whiteWins: 36, blackWins: 28, draws: 36, advantage: "+0.2", popularity: {beginner: 80, intermediate: 75, advanced: 70, gm: 60}
+      },
+
+      "colle-system": {
+        id: "colle-system", name: "Sistema Colle", eco: "D05",
+        family: "sistemas", classification: "sistema",
+        moves: "1.d4 d5 2.Nf3 Nf6 3.e3", tags: ["simple", "sólida", "posicional"],
+        description: "Sistema con e3. Simple y posicional, fácil de aprender.",
+        whiteWins: 35, blackWins: 29, draws: 36, advantage: "+0.2", popularity: {beginner: 70, intermediate: 60, advanced: 50, gm: 30}
+      },
+
+      "torre-attack": {
+        id: "torre-attack", name: "Ataque Torre", eco: "A46-A48",
+        family: "sistemas", classification: "sistema",
+        moves: "1.d4 Nf6 2.Nf3 e6 3.Bg5", tags: ["agresiva", "flexible", "táctica"],
+        description: "Bg5 temprano. Más agresivo que Colle y Londres.",
+        whiteWins: 36, blackWins: 28, draws: 36, advantage: "+0.3", popularity: {beginner: 55, intermediate: 60, advanced: 65, gm: 50}
+      },
+
+      "trompowsky": {
+        id: "trompowsky", name: "Ataque Trompowsky", eco: "A45",
+        family: "sistemas", classification: "sistema",
+        moves: "1.d4 Nf6 2.Bg5", tags: ["agresiva", "poco común", "táctica"],
+        description: "Bg5 en la segunda jugada. Sorprendente y agresivo.",
+        whiteWins: 37, blackWins: 28, draws: 35, advantage: "+0.3", popularity: {beginner: 40, intermediate: 55, advanced: 70, gm: 65}
+      },
+
+      "stonewall-attack": {
+        id: "stonewall-attack", name: "Ataque Stonewall", eco: "D00",
+        family: "sistemas", classification: "sistema",
+        moves: "1.d4 d5 2.e3 Nf6 3.Bd3 c5 4.c3 Nc6 5.f4", tags: ["sólida", "agresiva", "estructura fija"],
+        description: "Estructura de peones fija con f4. Plan de ataque claro.",
+        whiteWins: 36, blackWins: 28, draws: 36, advantage: "+0.3", popularity: {beginner: 50, intermediate: 55, advanced: 60, gm: 40}
+      },
+
+      // ==================== APERTURAS DE FLANCO (A00-A39) ====================
+
+      "english": {
+        id: "english", name: "Apertura Inglesa", eco: "A10-A39", 
+        family: "flanco", classification: "apertura",
+        moves: "1.c4", tags: ["flexible", "posicional", "hipermoderna"],
+        description: "Máxima flexibilidad. Puede transponerse a múltiples estructuras.",
+        detailedDescription: `
+          <p class="mb-4">La <strong>Apertura Inglesa</strong> lleva su nombre porque Howard Staunton, el jugador inglés más fuerte del siglo XIX, la empleó en su match de 1843 contra Saint-Amant. Es la tercera apertura más popular a nivel de élite y la favorita de muchos Campeones Mundiales.</p>
+          
+          <p class="mb-4"><strong>Idea Principal:</strong> Con 1.c4, las blancas controlan d5 desde el flanco, adoptando filosofía hipermoderna. A diferencia de 1.e4 o 1.d4, la Inglesa es increíblemente flexible - puede transponerse a estructuras de Siciliana Invertida, India de Rey Invertida, Estructura Caro-Kann, o mantener su propia identidad con formaciones únicas.</p>
+          
+          <p class="mb-4"><strong>Planes Típicos:</strong> Las blancas pueden fianchettar (g3, Bg2), jugar e4 (Siciliana Invertida con tiempo extra), o d4 (transponiendo a Gambito de Dama). Contra 1...e5, las blancas juegan Nc3 y g3 creando una Siciliana Invertida. La clave es mantener flexibilidad y elegir plan según la respuesta negra.</p>
+          
+          <p><strong>Estilo de Juego:</strong> Flexible y posicional. Ideal para jugadores que aman la estrategia y quieren evitar preparación teórica del oponente.</p>
+        `,
+        initialBoard: generateChessBoard([
+          ['r','n','b','q','k','b','n','r'],
+          ['p','p','p','p','p','p','p','p'],
+          ['','','','','','','',''],
+          ['','','','','','','',''],
+          ['','','P','','','','',''],
+          ['','','','','','','',''],
+          ['P','P','','P','P','P','P','P'],
+          ['R','N','B','Q','K','B','N','R']
+        ], [{from: 'c2', to: 'c4'}]),
+        keyMoves: [
+          {move: '1.c4', explanation: 'Control hipermoderno de d5'},
+          {move: '1...e5', explanation: 'Respuesta clásica tomando espacio central'},
+          {move: '2.Nc3', explanation: 'Desarrollo y control de d5 y e4'},
+          {move: '2...Nf6', explanation: 'Desarrollo natural'},
+          {move: '3.g3', explanation: 'Fianchetto - creando Siciliana Invertida con tiempo extra'},
+          {move: '3...d5', explanation: 'Las negras buscan contrajuego central'}
+        ],
+        specialNote: '🎭 <strong>EL CAMALEÓN</strong> - Botvinnik, Karpov, Kasparov y Kramnik la han usado como arma principal. Se la llama "el camaleón" porque puede transformarse en muchas aperturas diferentes. Permite jugar posiciones de Siciliana ¡con las piezas blancas y tiempo de más!',
+        whiteWins: 37, blackWins: 28, draws: 35, advantage: "+0.2", popularity: {beginner: 30, intermediate: 55, advanced: 75, gm: 85}
+      },
+
+      "reti": {
+        id: "reti", name: "Apertura Réti", eco: "A04-A09",
+        family: "flanco", classification: "apertura",
+        moves: "1.Nf3 d5 2.c4", tags: ["hipermoderna", "flexible", "posicional"],
+        description: "Inicio con Nf3. Hipermoderna y muy flexible.",
+        whiteWins: 36, blackWins: 28, draws: 36, advantage: "+0.2", popularity: {beginner: 35, intermediate: 50, advanced: 70, gm: 75}
+      },
+
+      "kings-indian-attack": {
+        id: "kings-indian-attack", name: "Ataque Indio de Rey", eco: "A07-A08",
+        family: "sistemas", classification: "sistema",
+        moves: "1.Nf3 d5 2.g3 (preparando fianchetto)", tags: ["flexible", "sólida", "sistema"],
+        description: "Fianchetto del rey con blancas. Sistema universal muy flexible.",
+        whiteWins: 35, blackWins: 29, draws: 36, advantage: "+0.2", popularity: {beginner: 50, intermediate: 60, advanced: 70, gm: 60}
+      },
+
+      "bird": {
+        id: "bird", name: "Apertura Bird", eco: "A02-A03",
+        family: "flanco", classification: "apertura",
+        moves: "1.f4", tags: ["agresiva", "poco común", "arriesgada"],
+        description: "Avance temprano de f4. Agresiva pero debilita el rey.",
+        whiteWins: 36, blackWins: 29, draws: 35, advantage: "+0.2", popularity: {beginner: 30, intermediate: 40, advanced: 50, gm: 35}
+      },
+
+      "larsen": {
+        id: "larsen", name: "Apertura Larsen", eco: "A01",
+        family: "flanco", classification: "apertura",
+        moves: "1.b3", tags: ["poco común", "flexible", "posicional"],
+        description: "Fianchetto del alfil dama desde el inicio. Poco convencional.",
+        whiteWins: 35, blackWins: 29, draws: 36, advantage: "+0.2", popularity: {beginner: 25, intermediate: 35, advanced: 45, gm: 40}
+      },
+
+      // ==================== APERTURAS IRREGULARES ====================
+
+      "grob": {
+        id: "grob", name: "Ataque Grob", eco: "A00",
+        family: "irregulares", classification: "apertura",
+        moves: "1.g4", tags: ["irregular", "arriesgada", "poco común"],
+        description: "1.g4 - Ultra agresiva e irregular. Muy arriesgada.",
+        whiteWins: 33, blackWins: 32, draws: 35, advantage: "0.0", popularity: {beginner: 15, intermediate: 20, advanced: 25, gm: 10}
+      },
+
+      "nimzowitsch-defense": {
+        id: "nimzowitsch-defense", name: "Defensa Nimzowitsch", eco: "B00",
+        family: "irregulares", classification: "defensa",
+        moves: "1.e4 Nc6", tags: ["irregular", "poco común", "flexible"],
+        description: "1...Nc6 contra e4. Irregular pero jugable.",
+        whiteWins: 39, blackWins: 26, draws: 35, advantage: "+0.4", popularity: {beginner: 20, intermediate: 25, advanced: 30, gm: 15}
+      },
+
+      "ware": {
+        id: "ware", name: "Apertura Ware", eco: "A00",
+        family: "irregulares", classification: "apertura",
+        moves: "1.a4", tags: ["irregular", "poco común", "sorprendente"],
+        description: "1.a4 - Muy poco convencional. Sorpresa total.",
+        whiteWins: 34, blackWins: 30, draws: 36, advantage: "+0.1", popularity: {beginner: 10, intermediate: 15, advanced: 20, gm: 5}
+      },
+
+      "polish": {
+        id: "polish", name: "Apertura Polaca (Sokolsky)", eco: "A00",
+        family: "irregulares", classification: "apertura",
+        moves: "1.b4", tags: ["irregular", "gambito", "poco común"],
+        description: "1.b4 - Ofreciendo gambito desde el inicio. Muy irregular.",
+        whiteWins: 35, blackWins: 30, draws: 35, advantage: "+0.1", popularity: {beginner: 20, intermediate: 25, advanced: 30, gm: 15}
+      },
+
+      "orangutan": {
+        id: "orangutan", name: "Apertura Orangután", eco: "A00",
+        family: "irregulares", classification: "apertura",
+        moves: "1.b4", tags: ["irregular", "poco común", "flexible"],
+        description: "Otro nombre para la Polaca. Popularizada por Tartakower.",
+        whiteWins: 35, blackWins: 30, draws: 35, advantage: "+0.1", popularity: {beginner: 20, intermediate: 25, advanced: 30, gm: 15}
+      },
+
+      "st-george": {
+        id: "st-george", name: "Defensa San Jorge", eco: "B00",
+        family: "irregulares", classification: "defensa",
+        moves: "1.e4 a6", tags: ["irregular", "poco común", "flexible"],
+        description: "1...a6 - Muy irregular pero flexible.",
+        whiteWins: 42, blackWins: 23, draws: 35, advantage: "+0.6", popularity: {beginner: 15, intermediate: 20, advanced: 25, gm: 10}
+      }
+    };
+
+    let currentCategory = 'all';
+    let currentOpeningDetail = null;
+    let calculatorState = {
+      style: null, confidence: null, whitePreference: null,
+      blackCenterControl: null, pieceActivity: null
+    };
+
+    function getRecommendedOpenings() {
+      const { style, confidence, whitePreference, blackCenterControl, pieceActivity } = calculatorState;
+      
+      const recommendations = {
+        white: [],
+        vsE4: [],
+        vsD4: [],
+        vsOther: []
+      };
+
+      if (whitePreference === 'e4') {
+        if (style === 'aggressive') {
+          recommendations.white.push('kings-gambit', 'italian', 'scotch');
+        } else if (style === 'positional') {
+          recommendations.white.push('ruy-lopez', 'italian', 'scotch');
+        } else if (style === 'solid') {
+          recommendations.white.push('italian', 'vienna');
+        }
+      } else if (whitePreference === 'd4') {
+        if (style === 'aggressive') {
+          recommendations.white.push('london-system', 'trompowsky');
+        } else if (style === 'positional') {
+          recommendations.white.push('queens-gambit', 'london-system');
+        } else if (style === 'solid') {
+          recommendations.white.push('london-system', 'colle-system');
+        }
+      } else {
+        if (style === 'aggressive') {
+          recommendations.white.push('english', 'bird');
+        } else if (style === 'positional') {
+          recommendations.white.push('english', 'reti');
+        } else {
+          recommendations.white.push('english', 'london-system');
+        }
+      }
+
+      if (blackCenterControl === 'direct') {
+        if (style === 'aggressive') {
+          recommendations.vsE4.push('sicilian', 'sicilian-najdorf');
+        } else if (style === 'positional') {
+          recommendations.vsE4.push('caro-kann', 'french');
+        } else {
+          recommendations.vsE4.push('caro-kann', 'french', 'petroff');
+        }
+      } else {
+        if (style === 'aggressive') {
+          recommendations.vsE4.push('sicilian', 'pirc');
+        } else if (style === 'positional') {
+          recommendations.vsE4.push('french', 'pirc');
+        } else {
+          recommendations.vsE4.push('pirc', 'caro-kann');
+        }
+      }
+
+      if (blackCenterControl === 'direct') {
+        if (style === 'aggressive') {
+          recommendations.vsD4.push('kings-indian', 'benoni');
+        } else if (style === 'positional') {
+          recommendations.vsD4.push('queens-gambit', 'nimzo-indian');
+        } else {
+          recommendations.vsD4.push('nimzo-indian', 'slav');
+        }
+      } else {
+        if (style === 'aggressive') {
+          recommendations.vsD4.push('kings-indian', 'grunfeld');
+        } else if (style === 'positional') {
+          recommendations.vsD4.push('nimzo-indian', 'grunfeld');
+        } else {
+          recommendations.vsD4.push('nimzo-indian', 'queens-indian');
+        }
+      }
+
+      if (style === 'aggressive') {
+        recommendations.vsOther.push('sicilian', 'kings-indian');
+      } else if (style === 'positional') {
+        recommendations.vsOther.push('english', 'nimzo-indian');
+      } else {
+        recommendations.vsOther.push('caro-kann', 'nimzo-indian');
+      }
+
+      return recommendations;
+    }
+
+    function renderCalculator() {
+      const mainContent = document.getElementById('main-content');
+      
+      const step = !calculatorState.style ? 1 :
+                   !calculatorState.confidence ? 2 :
+                   !calculatorState.whitePreference ? 3 :
+                   !calculatorState.blackCenterControl ? 4 :
+                   !calculatorState.pieceActivity ? 5 : 6;
+
+      if (step === 6) {
+        const recommendations = getRecommendedOpenings();
+        
+        mainContent.innerHTML = `
+          <div class="detail-section">
+            <h2 class="text-4xl font-bold mb-6" style="font-family: 'Merriweather', serif; color: ${defaultConfig.primary_color};">
+              🎯 Tu Repertorio Personalizado
+            </h2>
+            
+            <div class="mb-8 p-6 rounded-lg" style="background: rgba(16, 185, 129, 0.1); border: 2px solid rgba(16, 185, 129, 0.3);">
+              <h3 class="text-2xl font-bold mb-4" style="color: #10b981;">📊 Tu Perfil de Jugador</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-slate-300">
+                <div><strong>Estilo:</strong> ${calculatorState.style === 'aggressive' ? 'Agresivo/Táctico' : calculatorState.style === 'positional' ? 'Posicional/Estratégico' : 'Sólido/Defensivo'}</div>
+                <div><strong>Confianza:</strong> ${calculatorState.confidence === 'attacking' ? 'Atacante' : calculatorState.confidence === 'balanced' ? 'Equilibrado' : 'Defensivo'}</div>
+                <div><strong>Con blancas:</strong> ${calculatorState.whitePreference === 'e4' ? '1.e4' : calculatorState.whitePreference === 'd4' ? '1.d4' : 'Otras aperturas'}</div>
+                <div><strong>Con negras (centro):</strong> ${calculatorState.blackCenterControl === 'direct' ? 'Control directo' : 'Control desde lejos'}</div>
+                <div><strong>Actividad de piezas:</strong> ${calculatorState.pieceActivity === 'yes' ? 'Alta prioridad' : 'Media prioridad'}</div>
+              </div>
+            </div>
+
+            ${renderRecommendationSection('♔ Con Blancas - Tus Aperturas Recomendadas', recommendations.white)}
+            ${renderRecommendationSection('♟ Con Negras vs 1.e4', recommendations.vsE4)}
+            ${renderRecommendationSection('♟ Con Negras vs 1.d4', recommendations.vsD4)}
+            ${renderRecommendationSection('♟ Con Negras vs Otras Aperturas', recommendations.vsOther)}
+
+            <div class="flex gap-4 justify-center mt-8">
+              <button id="restart-calc" class="px-6 py-3 rounded-lg font-semibold transition-all" 
+                      style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 2px solid rgba(59, 130, 246, 0.3);">
+                🔄 Reiniciar Calculadora
+              </button>
+            </div>
+          </div>
+        `;
+
+        document.getElementById('restart-calc').addEventListener('click', () => {
+          calculatorState = {
+            style: null, confidence: null, whitePreference: null, 
+            blackCenterControl: null, pieceActivity: null
+          };
+          renderCalculator();
+        });
+
+        return;
+      }
+
+      const steps = [
+        {
+          title: '¿Qué tipo de jugador eres?',
+          options: [
+            { value: 'aggressive', icon: '🔥', title: 'Agresivo/Táctico', desc: 'Me encanta atacar, sacrificar y buscar tácticas complejas' },
+            { value: 'positional', icon: '🎯', title: 'Posicional/Estratégico', desc: 'Prefiero maniobras estratégicas, ventaja de espacio y planes a largo plazo' },
+            { value: 'solid', icon: '🛡️', title: 'Sólido/Defensivo', desc: 'Busco posiciones seguras, minimizar riesgos y juego sólido' }
+          ],
+          key: 'style'
+        },
+        {
+          title: '¿Cómo te sientes más seguro?',
+          options: [
+            { value: 'attacking', icon: '⚔️', title: 'Atacando', desc: 'Me siento cómodo tomando la iniciativa y atacando primero' },
+            { value: 'balanced', icon: '⚖️', title: 'Equilibrado', desc: 'Depende de la posición, puedo atacar o defender' },
+            { value: 'defensive', icon: '🏰', title: 'Defendiendo', desc: 'Prefiero defender sólidamente y contraatacar' }
+          ],
+          key: 'confidence'
+        },
+        {
+          title: 'Con blancas, ¿qué prefieres jugar?',
+          options: [
+            { value: 'e4', icon: '♔', title: '1.e4', desc: 'Juego abierto, táctico, desarrollo rápido' },
+            { value: 'd4', icon: '♕', title: '1.d4', desc: 'Juego posicional, control del centro, estrategia' },
+            { value: 'other', icon: '⚡', title: 'Otras (1.c4, 1.Nf3, etc)', desc: 'Flexibilidad, sorpresa, evitar teoría' }
+          ],
+          key: 'whitePreference'
+        },
+        {
+          title: 'Con negras, ¿cómo prefieres controlar el centro?',
+          options: [
+            { value: 'direct', icon: '🎯', title: 'Control Directo', desc: 'Ocupar el centro con peones (...e5, ...d5)' },
+            { value: 'distant', icon: '🏹', title: 'Control a Distancia', desc: 'Controlar desde lejos con piezas (fianchetto, hipermoderno)' }
+          ],
+          key: 'blackCenterControl'
+        },
+        {
+          title: '¿Qué tan importante es para ti la actividad de piezas?',
+          options: [
+            { value: 'yes', icon: '⚡', title: 'Muy Importante', desc: 'Prefiero actividad aunque sacrifique estructura de peones' },
+            { value: 'no', icon: '🏗️', title: 'Menos Importante', desc: 'Prefiero estructura sólida aunque mis piezas sean menos activas' }
+          ],
+          key: 'pieceActivity'
+        }
+      ];
+
+      const currentStep = steps[step - 1];
+
+      mainContent.innerHTML = `
+        <div class="detail-section max-w-4xl mx-auto">
+          <div class="text-center mb-8">
+            <div class="flex justify-center gap-2 mb-6">
+              ${steps.map((_, i) => `
+                <div class="w-12 h-2 rounded-full transition-all" 
+                     style="background: ${i < step ? defaultConfig.accent_color : 'rgba(148, 163, 184, 0.2)'};">
+                </div>
+              `).join('')}
+            </div>
+            <h2 class="text-3xl md:text-4xl font-bold mb-4" style="font-family: 'Merriweather', serif; color: ${defaultConfig.primary_color};">
+              ${currentStep.title}
+            </h2>
+            <p class="text-slate-400">Paso ${step} de ${steps.length}</p>
+          </div>
+
+          <div class="grid grid-cols-1 gap-4">
+            ${currentStep.options.map(option => `
+              <div class="calculator-option" data-value="${option.value}" data-key="${currentStep.key}">
+                <div class="flex items-start gap-4">
+                  <div class="text-5xl">${option.icon}</div>
+                  <div class="flex-1">
+                    <h3 class="text-2xl font-bold mb-2" style="color: ${defaultConfig.primary_color};">
+                      ${option.title}
+                    </h3>
+                    <p class="text-slate-300">${option.desc}</p>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          ${step > 1 ? `
+            <div class="flex justify-center mt-8">
+              <button id="back-calc" class="px-6 py-3 rounded-lg font-semibold transition-all" 
+                      style="background: rgba(148, 163, 184, 0.2); color: #cbd5e1; border: 2px solid rgba(148, 163, 184, 0.3);">
+                ← Volver
+              </button>
+            </div>
+          ` : ''}
+        </div>
+      `;
+
+      document.querySelectorAll('.calculator-option').forEach(option => {
+        option.addEventListener('click', () => {
+          const value = option.dataset.value;
+          const key = option.dataset.key;
+          calculatorState[key] = value;
+          renderCalculator();
+        });
+      });
+
+      if (step > 1) {
+        document.getElementById('back-calc').addEventListener('click', () => {
+          const keys = ['style', 'confidence', 'whitePreference', 'blackCenterControl', 'pieceActivity'];
+          calculatorState[keys[step - 2]] = null;
+          renderCalculator();
+        });
+      }
+    }
+
+    function renderRecommendationSection(title, openingIds) {
+      const openings = openingIds.map(id => openingsDatabase[id]).filter(o => o);
+      
+      return `
+        <div class="mb-8">
+          <h3 class="text-2xl font-bold mb-4" style="color: ${defaultConfig.primary_color};">${title}</h3>
+          <div class="grid grid-cols-1 gap-4">
+            ${openings.map(opening => `
+              <div class="recommendation-card cursor-pointer opening-card-clickable" data-opening-id="${opening.id}">
+                <div class="flex justify-between items-start mb-3">
+                  <div>
+                    <h4 class="text-xl font-bold mb-2" style="color: ${defaultConfig.accent_color};">${opening.name}</h4>
+                    <p class="text-slate-300 text-sm font-mono mb-2">${opening.moves}</p>
+                  </div>
+                  <span class="badge" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa;">${opening.eco}</span>
+                </div>
+                <p class="text-slate-300 mb-3">${opening.description}</p>
+                <div class="flex gap-2 flex-wrap">
+                  ${opening.tags.map(tag => `
+                    <span class="text-xs px-3 py-1 rounded-full" style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7;">
+                      ${tag}
+                    </span>
+                  `).join('')}
+                </div>
+                <div class="mt-3 pt-3 border-t border-slate-700">
+                  <p class="text-sm text-slate-400">Click para ver análisis completo →</p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderOpeningsList() {
+      const mainContent = document.getElementById('main-content');
+      const searchTerm = document.getElementById('search-input').value.toLowerCase();
+      
+      let filteredOpenings = Object.values(openingsDatabase).filter(opening => {
+        const matchesCategory = currentCategory === 'all' || opening.family === currentCategory;
+        const matchesSearch = opening.name.toLowerCase().includes(searchTerm) || 
+                            opening.moves.toLowerCase().includes(searchTerm) ||
+                            opening.eco.toLowerCase().includes(searchTerm) ||
+                            opening.description.toLowerCase().includes(searchTerm) ||
+                            opening.tags.some(tag => tag.toLowerCase().includes(searchTerm));
+        return matchesCategory && matchesSearch;
+      });
+
+      if (currentCategory === 'recommendations') {
+        renderRecommendations();
+        return;
+      }
+
+      if (currentCategory === 'calculator') {
+        renderCalculator();
+        return;
+      }
+
+      // Agrupar por familia
+      const familyNames = {
+        'abiertas': '👑 Aperturas Abiertas (1.e4 e5)',
+        'semiabiertas': '⚔️ Aperturas Semiabiertas (1.e4 sin 1...e5)',
+        'cerradas': '🏰 Aperturas Cerradas (1.d4 d5)',
+        'indias': '🐘 Defensas Indias (1.d4 Nf6)',
+        'flanco': '🌊 Aperturas de Flanco',
+        'gambitos': '🎲 Gambitos',
+        'sistemas': '🔧 Sistemas Universales',
+        'irregulares': '🎭 Aperturas Irregulares'
+      };
+
+      const groupedOpenings = {};
+      filteredOpenings.forEach(opening => {
+        if (!groupedOpenings[opening.family]) {
+          groupedOpenings[opening.family] = [];
+        }
+        groupedOpenings[opening.family].push(opening);
+      });
+
+      mainContent.innerHTML = `
+        <div class="mb-6">
+          <h2 class="text-3xl font-bold mb-2" style="color: ${defaultConfig.primary_color};">
+            ${currentCategory === 'all' ? '📚 Todas las Aperturas Organizadas por ECO' : familyNames[currentCategory] || 'Categoría'}
+          </h2>
+          <p class="text-slate-400">Explora ${filteredOpenings.length} ${filteredOpenings.length === 1 ? 'apertura' : 'aperturas'} en esta categoría</p>
+        </div>
+        
+        ${Object.keys(groupedOpenings).map(family => `
+          <div class="family-section">
+            <h3 class="text-2xl font-bold mb-4" style="color: ${defaultConfig.accent_color};">
+              ${familyNames[family]}
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              ${groupedOpenings[family].map(opening => `
+                <div class="opening-card p-4 cursor-pointer opening-card-clickable" data-opening-id="${opening.id}">
+                  <div class="flex justify-between items-start mb-2">
+                    <h4 class="text-lg font-bold" style="color: ${defaultConfig.primary_color};">${opening.name}</h4>
+                    <span class="badge" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; font-size: 10px;">${opening.eco}</span>
+                  </div>
+                  <p class="text-slate-400 text-xs mb-2 font-mono">${opening.moves}</p>
+                  <p class="text-slate-300 text-sm mb-3">${opening.description}</p>
+                  <div class="flex gap-1 mb-3 flex-wrap">
+                    ${opening.tags.slice(0, 3).map(tag => `
+                      <span class="text-xs px-2 py-1 rounded" style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7;">${tag}</span>
+                    `).join('')}
+                  </div>
+                  <div class="grid grid-cols-2 gap-2">
+                    <div class="text-center p-2 rounded text-xs" style="background: rgba(59, 130, 246, 0.1);">
+                      <p class="text-xs text-slate-400 mb-1">Ventaja</p>
+                      <p class="text-sm font-bold" style="color: ${defaultConfig.accent_color};">${opening.advantage}</p>
+                    </div>
+                    <div class="text-center p-2 rounded text-xs" style="background: rgba(59, 130, 246, 0.1);">
+                      <p class="text-xs text-slate-400 mb-1">Blancas</p>
+                      <p class="text-sm font-bold" style="color: ${defaultConfig.accent_color};">${opening.whiteWins}%</p>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `).join('')}
+      `;
+
+      document.querySelectorAll('.opening-card-clickable').forEach(card => {
+        card.addEventListener('click', () => {
+          const openingId = card.dataset.openingId;
+          renderOpeningDetail(openingId);
+        });
+      });
+    }
+
+    function renderOpeningDetail(openingId) {
+      const opening = openingsDatabase[openingId];
+      if (!opening) return;
+
+      currentOpeningDetail = opening;
+      const mainContent = document.getElementById('main-content');
+
+      mainContent.innerHTML = `
+        <button id="back-btn" class="mb-6 px-4 py-2 rounded-lg font-semibold transition-all" 
+                style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);">
+          ← Volver a la lista
+        </button>
+
+        <div class="detail-section">
+          <div class="flex flex-wrap justify-between items-start gap-4 mb-6">
+            <div>
+              <h1 class="text-4xl font-bold mb-2" style="font-family: 'Merriweather', serif; color: ${defaultConfig.primary_color};">
+                ${opening.name}
+              </h1>
+              <div class="flex gap-2 items-center flex-wrap mb-3">
+                <span class="badge" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; font-size: 14px; padding: 6px 16px;">
+                  ${opening.eco}
+                </span>
+                <span class="badge" style="background: rgba(251, 191, 36, 0.2); color: #fbbf24; font-size: 14px; padding: 6px 16px;">
+                  ${opening.classification}
+                </span>
+                ${opening.tags.map(tag => `
+                  <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; font-size: 14px; padding: 6px 16px;">
+                    ${tag}
+                  </span>
+                `).join('')}
+              </div>
+              <p class="text-slate-400 text-lg font-mono mb-2">${opening.moves}</p>
+            </div>
+          </div>
+
+          ${opening.specialNote ? `
+            <div class="special-note-box">
+              <p class="text-slate-200 text-lg leading-relaxed">${opening.specialNote}</p>
+            </div>
+          ` : ''}
+
+          ${opening.detailedDescription ? `
+            <div class="mb-6 text-slate-300 leading-relaxed">
+              ${opening.detailedDescription}
+            </div>
+          ` : `
+            <div class="mb-6">
+              <p class="text-slate-300 leading-relaxed text-lg">${opening.description}</p>
+            </div>
+          `}
+        </div>
+
+        ${opening.initialBoard ? `
+          <div class="detail-section">
+            <h2 class="text-2xl font-bold mb-4" style="color: ${defaultConfig.primary_color};">
+              ♟️ Posición Después de las Jugadas Clave
+            </h2>
+            <div class="flex justify-center mb-6">
+              ${opening.initialBoard}
+            </div>
+          </div>
+        ` : ''}
+
+        ${opening.systemBoard ? `
+          <div class="detail-section">
+            <h2 class="text-2xl font-bold mb-4" style="color: ${defaultConfig.primary_color};">
+              🏗️ Estructura Típica de Medio Juego
+            </h2>
+            <p class="text-slate-300 mb-4">Esta es la formación típica a la que se busca llegar:</p>
+            <div class="flex justify-center mb-6">
+              ${opening.systemBoard}
+            </div>
+          </div>
+        ` : ''}
+
+        ${opening.keyMoves ? `
+          <div class="detail-section">
+            <h2 class="text-2xl font-bold mb-4" style="color: ${defaultConfig.primary_color};">
+              📖 Secuencia de Movimientos y Explicación
+            </h2>
+            <div class="space-y-3">
+              ${opening.keyMoves.map(moveData => `
+                <div class="move-item">
+                  <div class="flex items-start gap-3">
+                    <span class="font-mono font-bold text-lg" style="color: ${defaultConfig.accent_color}; min-width: 80px;">
+                      ${moveData.move}
+                    </span>
+                    <p class="text-slate-300 flex-1">${moveData.explanation}</p>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div class="text-center p-6 rounded-xl" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));">
+            <p class="text-slate-400 text-sm mb-2">Ventaja Motor</p>
+            <p class="text-4xl font-bold" style="color: ${defaultConfig.accent_color};">
+              ${opening.advantage}
+            </p>
+          </div>
+          <div class="text-center p-6 rounded-xl" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));">
+            <p class="text-slate-400 text-sm mb-2">Blancas Ganan</p>
+            <p class="text-4xl font-bold" style="color: #10b981;">
+              ${opening.whiteWins}%
+            </p>
+          </div>
+          <div class="text-center p-6 rounded-xl" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));">
+            <p class="text-slate-400 text-sm mb-2">Negras Ganan</p>
+            <p class="text-4xl font-bold" style="color: #ef4444;">
+              ${opening.blackWins}%
+            </p>
+          </div>
+          <div class="text-center p-6 rounded-xl" style="background: linear-gradient(135deg, rgba(148, 163, 184, 0.15), rgba(148, 163, 184, 0.05));">
+            <p class="text-slate-400 text-sm mb-2">Tablas</p>
+            <p class="text-4xl font-bold" style="color: #94a3b8;">
+              ${opening.draws}%
+            </p>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h2 class="text-2xl font-bold mb-4" style="color: ${defaultConfig.primary_color};">
+            📊 Popularidad por Nivel
+          </h2>
+          <div class="space-y-4">
+            ${Object.entries(opening.popularity).map(([level, pop]) => `
+              <div>
+                <div class="flex justify-between mb-2">
+                  <span class="text-slate-300 font-semibold capitalize">${level === 'gm' ? 'Gran Maestro' : 
+                    level === 'advanced' ? 'Avanzado' : 
+                    level === 'intermediate' ? 'Intermedio' : 'Principiante'}</span>
+                  <span style="color: ${defaultConfig.accent_color};" class="font-bold">${pop}%</span>
+                </div>
+                <div class="w-full h-3 rounded" style="background: rgba(255,255,255,0.1);">
+                  <div class="stat-bar-fill" style="width: ${pop}%;"></div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+      document.getElementById('back-btn').addEventListener('click', () => {
+        renderOpeningsList();
+      });
+
+      mainContent.parentElement.scrollTop = 0;
+    }
+
+    function renderRecommendations() {
+      const mainContent = document.getElementById('main-content');
+      
+      mainContent.innerHTML = `
+        <div class="detail-section">
+          <h2 class="text-3xl font-bold mb-6" style="font-family: 'Merriweather', serif; color: ${defaultConfig.primary_color};">
+            ⭐ Recomendaciones Según Tu Estilo
+          </h2>
+          
+          <div class="mb-8 p-6 rounded-lg" style="background: rgba(59, 130, 246, 0.1); border: 2px solid rgba(59, 130, 246, 0.3);">
+            <p class="text-slate-300 text-lg">
+              💡 <strong>¿Quieres recomendaciones personalizadas?</strong> Usa nuestra <strong>Calculadora Personal</strong> 
+              para obtener un repertorio completo adaptado a tu estilo de juego.
+            </p>
+          </div>
+          
+          <div class="space-y-6">
+            <div class="p-6 rounded-xl" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05)); border: 2px solid rgba(239, 68, 68, 0.3);">
+              <h3 class="text-2xl font-bold mb-3" style="color: #fca5a5;">🔥 Jugador Agresivo / Táctico</h3>
+              <p class="text-slate-300 mb-4">Si prefieres ataques directos, tácticas agudas y posiciones complejas:</p>
+              <ul class="space-y-3">
+                <li class="flex gap-3">
+                  <span style="color: #ef4444;">▸</span>
+                  <div>
+                    <strong class="text-slate-200">Con Blancas:</strong>
+                    <span class="text-slate-300"> Gambito de Rey, Italiana, Escocesa</span>
+                  </div>
+                </li>
+                <li class="flex gap-3">
+                  <span style="color: #ef4444;">▸</span>
+                  <div>
+                    <strong class="text-slate-200">Con Negras:</strong>
+                    <span class="text-slate-300"> Siciliana (Najdorf, Dragón), Pirc, India de Rey</span>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="p-6 rounded-xl" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05)); border: 2px solid rgba(59, 130, 246, 0.3);">
+              <h3 class="text-2xl font-bold mb-3" style="color: #60a5fa;">🎯 Jugador Posicional / Estratégico</h3>
+              <p class="text-slate-300 mb-4">Si prefieres maniobras estratégicas, ventaja de espacio y planes a largo plazo:</p>
+              <ul class="space-y-3">
+                <li class="flex gap-3">
+                  <span style="color: #3b82f6;">▸</span>
+                  <div>
+                    <strong class="text-slate-200">Con Blancas:</strong>
+                    <span class="text-slate-300"> Ruy López, Gambito de Dama, Inglesa, Londres</span>
+                  </div>
+                </li>
+                <li class="flex gap-3">
+                  <span style="color: #3b82f6;">▸</span>
+                  <div>
+                    <strong class="text-slate-200">Con Negras:</strong>
+                    <span class="text-slate-300"> Nimzo-India, Caro-Kann, Francesa, Grünfeld</span>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="p-6 rounded-xl" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05)); border: 2px solid rgba(16, 185, 129, 0.3);">
+              <h3 class="text-2xl font-bold mb-3" style="color: #6ee7b7;">🛡️ Jugador Sólido / Defensivo</h3>
+              <p class="text-slate-300 mb-4">Si prefieres posiciones sólidas, minimizar riesgos y juego seguro:</p>
+              <ul class="space-y-3">
+                <li class="flex gap-3">
+                  <span style="color: #10b981;">▸</span>
+                  <div>
+                    <strong class="text-slate-200">Con Blancas:</strong>
+                    <span class="text-slate-300"> Sistema Londres, Inglesa, Viena</span>
+                  </div>
+                </li>
+                <li class="flex gap-3">
+                  <span style="color: #10b981;">▸</span>
+                  <div>
+                    <strong class="text-slate-200">Con Negras:</strong>
+                    <span class="text-slate-300"> Petroff, Caro-Kann, Nimzo-India</span>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Category navigation
+    document.querySelectorAll('.category-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.category-btn').forEach(b => {
+          b.classList.remove('active');
+          b.style.color = '#cbd5e1';
+        });
+        btn.classList.add('active');
+        btn.style.color = '#f1f5f9';
+        
+        currentCategory = btn.dataset.category;
+        renderOpeningsList();
+      });
+    });
+
+    // Search
+    document.getElementById('search-input').addEventListener('input', () => {
+      renderOpeningsList();
+    });
+
+    // Mobile menu
+    document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+      document.getElementById('sidebar').classList.toggle('open');
+    });
+
+    // Element SDK
+    async function onConfigChange(config) {
+      const customFont = config.font_family || defaultConfig.font_family;
+      const baseFontStack = 'Inter, sans-serif';
+      const titleFontStack = 'Merriweather, serif';
+      const baseSize = config.font_size || defaultConfig.font_size;
+
+      document.getElementById('site-title').textContent = config.site_title || defaultConfig.site_title;
+      document.getElementById('site-tagline').textContent = config.site_tagline || defaultConfig.site_tagline;
+
+      document.getElementById('site-title').style.fontFamily = `${customFont}, ${titleFontStack}`;
+      document.getElementById('site-title').style.fontSize = `${baseSize * 1.875}px`;
+      document.getElementById('site-tagline').style.fontFamily = `${customFont}, ${baseFontStack}`;
+      document.getElementById('site-tagline').style.fontSize = `${baseSize * 0.875}px`;
+
+      renderOpeningsList();
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities: (config) => ({
+          recolorables: [
+            {
+              get: () => config.background_color || defaultConfig.background_color,
+              set: (value) => {
+                config.background_color = value;
+                window.elementSdk.setConfig({ background_color: value });
+              }
+            },
+            {
+              get: () => config.surface_color || defaultConfig.surface_color,
+              set: (value) => {
+                config.surface_color = value;
+                window.elementSdk.setConfig({ surface_color: value });
+              }
+            },
+            {
+              get: () => config.text_color || defaultConfig.text_color,
+              set: (value) => {
+                config.text_color = value;
+                window.elementSdk.setConfig({ text_color: value });
+              }
+            },
+            {
+              get: () => config.primary_color || defaultConfig.primary_color,
+              set: (value) => {
+                config.primary_color = value;
+                window.elementSdk.setConfig({ primary_color: value });
+              }
+            },
+            {
+              get: () => config.accent_color || defaultConfig.accent_color,
+              set: (value) => {
+                config.accent_color = value;
+                window.elementSdk.setConfig({ accent_color: value });
+              }
+            }
+          ],
+          borderables: [],
+          fontEditable: {
+            get: () => config.font_family || defaultConfig.font_family,
+            set: (value) => {
+              config.font_family = value;
+              window.elementSdk.setConfig({ font_family: value });
+            }
+          },
+          fontSizeable: {
+            get: () => config.font_size || defaultConfig.font_size,
+            set: (value) => {
+              config.font_size = value;
+              window.elementSdk.setConfig({ font_size: value });
+            }
+          }
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ["site_title", config.site_title || defaultConfig.site_title],
+          ["site_tagline", config.site_tagline || defaultConfig.site_tagline]
+        ])
+      });
+    }
+
+    // Initial render
+    renderOpeningsList();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b9753b2c22d576f',t:'MTc2NzY2MTczNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
